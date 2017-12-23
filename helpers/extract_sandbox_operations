@@ -23,7 +23,7 @@ if ! [[ "$ios_version" =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 
-echo "Extracting sandbox operations of iOS $ios_version ..." 1>&2
+echo "Extracting sandbox operations of iOS $2 ..." 1>&2
 if test "$ios_version" -le 4; then
     echo "No support for iOS <= 4 yet." 1>&2
     exit 1
