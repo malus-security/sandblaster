@@ -29,10 +29,24 @@ if test "$ios_version" -le 4; then
     exit 1
 elif test "$ios_version" -le 8; then
     "$EXTRACT_SBOPS" "$sandbox_kext"
-elif test "$ios_version" -le 10; then
-    "$EXTRACT_SBOPS" "$sandbox_kext" | head -n -3
 elif test "$ios_version" -le 11; then
-    "$EXTRACT_SBOPS" "$sandbox_kext" | head -n -6
+    # Trim extra output. Last correct operations are system-*.
+    # Print those and ditch the rest.
+    "$EXTRACT_SBOPS" "$sandbox_kext" | awk '
+BEGIN {
+    found=0;
+}
+/^system-.*/ {
+    print $0;
+    found=1;
+    next;
+}
+{
+    if (found == 0)
+        print $0;
+    else
+        exit 0;
+}'
 else
     echo "Unknown or unsupported iOS major version $ios_version" 1>&2
     exit 1
