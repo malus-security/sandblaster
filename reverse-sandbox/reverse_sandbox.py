@@ -110,12 +110,17 @@ def process_profile(infile, outfname, sb_ops, ops_to_reverse, op_table, operatio
     outfile_xml.write("</operations>\n")
     outfile_xml.close()
 
+def get_ios_major_version(release):
+    """
+    Returns major version of release
+    """
+    return int(release.split('.')[0])
 
 def is_ios_more_than_10_release(release):
     """
-    Release True if release is using newer (iOS >= 10) binary sandbox profile format.
+    Returns True if release is using newer (iOS >= 10) binary sandbox profile format.
     """
-    major_version = int(release.split('.')[0])
+    major_version = get_ios_major_version(release)
     if major_version < 10:
         return False
     return True
@@ -220,11 +225,15 @@ def main():
 
     f = open(args.filename, "rb")
 
-    header = struct.unpack("<H", f.read(2))[0]
+    if get_ios_major_version(args.release) >= 6:
+        header = struct.unpack("<H", f.read(2))[0]
+        logger.debug("header: 0x%x", header)
+    else:
+        logger.debug("header: none for iOS <6; using 0")
+        header = 0
 
     re_table_offset = struct.unpack("<H", f.read(2))[0]
     re_table_count = struct.unpack("<H", f.read(2))[0]
-    logger.debug("header: 0x%x", header)
     logger.debug("re_table_offset: 0x%x", re_table_offset)
     logger.debug("re_table_count: 0x%x", re_table_count)
 
@@ -320,8 +329,10 @@ def main():
             logger.info("{:d} global vars at offset 0x{:0x}".format(num_vars, vars_offset))
             global_vars = get_global_vars(f, vars_offset, num_vars)
             f.seek(10)
-        else:
+        elif get_ios_major_version(args.release) >= 6:
             f.seek(6)
+        else:
+            f.seek(4)
         op_table = struct.unpack("<%dH" % num_sb_ops, f.read(2 * num_sb_ops))
         for idx in range(1, len(op_table)):
             offset = op_table[idx]
@@ -337,7 +348,7 @@ def main():
         start = f.tell()
         end = re_table_offset * 8
         num_operation_nodes = (end - start) / 8
-        logger.info("number of operation nodes: %d" % num_operation_nodes)
+        logger.info("number of operation nodes: %d ; start: %#x" % (num_operation_nodes, start))
 
         operation_nodes = create_operation_nodes(f, regex_list, num_operation_nodes, is_ios_more_than_10_release(args.release), args.keep_builtin_filters, global_vars)
         out_fname = os.path.join(out_dir, os.path.splitext(os.path.basename(args.filename))[0])

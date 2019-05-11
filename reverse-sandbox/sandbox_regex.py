@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
+import struct
 import logging
 import logging.config
 
 logging.config.fileConfig("logger.config")
 logger = logging.getLogger(__name__)
+
+#import logging as logger
+from regex_parser_v1 import RegexParser as RegexParserV1
+from regex_parser_v3 import RegexParser as RegexParserV3
 
 class Node():
     """Representation of a node inside a regex non-deterministic automaton
@@ -150,7 +155,7 @@ class Graph():
         return ret_string
 
     def get_node_for_idx(self, idx):
-        if idx >= len(self.node_list):
+        if idx >= len(self.node_list) or idx < 0:
             return None
         return self.node_list[idx]
 
@@ -162,6 +167,11 @@ class Graph():
             if item["pos"]-1 == pos:
                 return idx
         return -1
+
+    def get_next_idx_for_regex_item(self, regex_list, regex_item):
+        result = self.get_re_index_for_pos(regex_list, regex_item["nextpos"])
+        assert(result >= 0)
+        return result
 
     def fill_from_regex_list(self, regex_list):
         # First create list of nodes. No pointers/links at this point.
@@ -178,6 +188,10 @@ class Graph():
             else:
                 node.set_type_character()
                 node.set_value(item["value"])
+
+            if 'start_node' in item and item['start_node'] == True:
+                assert(self.start_node == None)
+                self.start_node = node
             self.node_list.append(node)
 
         self.graph_dict = {}
@@ -186,7 +200,8 @@ class Graph():
             if node.is_type_end():
                  self.graph_dict[node] = []
             elif node.is_type_character():
-                next = self.get_node_for_idx(idx+1)
+                next = self.get_node_for_idx(
+                    self.get_next_idx_for_regex_item(regex_list, regex_list[idx]))
                 if next:
                     self.graph_dict[node] = [ next ]
                 else:
@@ -200,7 +215,8 @@ class Graph():
                 else:
                     self.graph_dict[node] = []
             elif node.is_type_jump_forward():
-                next_idx1 = idx+1
+                next_idx1 = self.get_next_idx_for_regex_item(
+                    regex_list, regex_list[idx])
                 next_idx2 = self.get_re_index_for_pos(regex_list, regex_list[idx]["value"])
                 next1 = self.get_node_for_idx(next_idx1)
                 next2 = self.get_node_for_idx(next_idx2)
@@ -232,17 +248,15 @@ class Graph():
         return False
 
     def reduce(self):
-        star_node = None
         for node in self.graph_dict.keys():
             if node.is_type_character():
                 self.graph_dict[node] = self.get_character_nodes(node)
-            if node.name == "0":
-                start_node = node
         old_dict = dict(self.graph_dict)
         backup_dict = dict(self.graph_dict)
         for node in old_dict.keys():
             if node.is_type_jump():
-                if self.find_node_type_jump(start_node, node, backup_dict):
+                if self.find_node_type_jump(self.start_node,
+                        node, backup_dict):
                     continue
                 del self.graph_dict[node]
 
@@ -431,7 +445,6 @@ class Graph():
         self.unified_regex = self.unify_strings(self.regex)
 
 
-from regex_parser import RegexParser
 
 def create_regex_list(re):
     """Convert binary regex to list of items.
@@ -443,11 +456,18 @@ def create_regex_list(re):
 
     regex_list = []
 
-    logger.debug("re.type: 0x%x", ((re[0] >> 24) + (re[1] >> 16) + (re[2] >> 8) + re[3]))
-    logger.debug("re.length: 0x%x", (re[4] + (re[5] >> 8)))
+    version = struct.unpack('>I', ''.join([chr(x) for x in re[:4]]))[0]
+    logger.debug("re.version: 0x%x", version)
 
-    i = 6
-    RegexParser.parse(re, i, regex_list)
+    i = 4
+    if version == 1:
+        RegexParserV1.parse(re, i, regex_list)
+    elif version == 3:
+        RegexParserV3.parse(re, i, regex_list)
+    else:
+        logger.critical("No parser available for regex version {:x}".format(vestion))
+
+
 
     return regex_list
 
