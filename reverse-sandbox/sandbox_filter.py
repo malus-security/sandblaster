@@ -12,8 +12,9 @@ from filters import Filters
 
 logging.config.fileConfig("logger.config")
 logger = logging.getLogger(__name__)
+import logging as logger
 
-ios10_release = False
+ios_major_version = 4
 keep_builtin_filters = False
 global_vars = []
 
@@ -21,7 +22,7 @@ def get_filter_arg_string_by_offset(f, offset):
     """Extract string (literal) from given offset."""
     f.seek(offset * 8)
     len = struct.unpack("<I", f.read(4))[0]
-    if ios10_release == True:
+    if ios_major_version >= 10:
         f.seek(offset * 8)
         s = f.read(4+len)
         logger.info("binary string is " + s.encode("hex"))
@@ -39,11 +40,11 @@ def get_filter_arg_string_by_offset(f, offset):
 
 def get_filter_arg_string_by_offset_with_type(f, offset):
     """Extract string from given offset and consider type byte."""
-    global ios10_release
+    global ios_major_version
     global keep_builtin_filters
     f.seek(offset * 8)
     len = struct.unpack("<I", f.read(4))[0]
-    if ios10_release == True:
+    if ios_major_version >= 10:
         f.seek(offset * 8)
         s = f.read(4+len)
         logger.info("binary string is " + s.encode("hex"))
@@ -402,7 +403,8 @@ string form we use one of the callback functions above; almost all
 callback function names start with get_filter_arg_.
 """
 
-def convert_filter_callback(f, ios10_release_arg, keep_builtin_filters_arg, global_vars_arg, re_list, filter_id, filter_arg):
+def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
+        global_vars_arg, re_list, filter_id, filter_arg):
     """Convert filter from binary form to string.
 
     Binary form consists of filter id and filter argument:
@@ -424,22 +426,23 @@ def convert_filter_callback(f, ios10_release_arg, keep_builtin_filters_arg, glob
     """
 
     global regex_list
-    global ios10_release
+    global ios_major_version
     global keep_builtin_filters
     global global_vars
     keep_builtin_filters = keep_builtin_filters_arg
-    ios10_release = ios10_release_arg
+    ios_major_version = ios_major_version_arg
     global_vars = global_vars_arg
     regex_list = re_list
 
-    if not Filters.exists(filter_id):
+    if not Filters.exists(ios_major_version, filter_id):
         logger.warn("filter_id {} not in keys".format(filter_id))
         return (None, None)
-    filter = Filters.get(filter_id)
+    filter = Filters.get(ios_major_version, filter_id)
     if not filter["arg_process_fn"]:
         logger.warn("no function for filter {}".format(filter_id))
         return (None, None)
     if filter["arg_process_fn"] == "get_filter_arg_string_by_offset_with_type":
+        print filter, hex(filter_id), hex(filter_arg)
         (append, result) = globals()[filter["arg_process_fn"]](f, filter_arg)
         if filter_id == 0x01 and append == "path":
             append = "subpath"
@@ -448,7 +451,8 @@ def convert_filter_callback(f, ios10_release_arg, keep_builtin_filters_arg, glob
             return (None, None)
         return (filter["name"] + append, result)
     result = globals()[filter["arg_process_fn"]](f, filter_arg)
-    if result == None and filter["name"] != "debug-mode":
+    if result == None and not (filter["name"] == "debug-mode" or
+            (filter["name"] == "extension" and ios_major_version <= 4)):
         logger.warn("result of calling arg_process_fn for filter {} is none".format(filter_id))
         return (None, None)
     return (filter["name"], result)

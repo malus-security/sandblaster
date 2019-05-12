@@ -33,15 +33,18 @@ def extract_string_from_offset(f, offset):
     return '%s' % f.read(len)
 
 
-def create_operation_nodes(infile, regex_list, num_operation_nodes, ios10_release, keep_builtin_filters, global_vars):
+def create_operation_nodes(infile, regex_list, num_operation_nodes,
+        ios_major_version, keep_builtin_filters, global_vars):
     # Read sandbox operations.
-    operation_nodes = operation_node.build_operation_nodes(infile, num_operation_nodes)
+    operation_nodes = operation_node.build_operation_nodes(infile,
+        num_operation_nodes)
     logger.info("operation nodes")
     for idx, node in enumerate(operation_nodes):
         logger.info("%d: %s", idx, node.str_debug())
 
     for n in operation_nodes:
-        n.convert_filter(sandbox_filter.convert_filter_callback, infile, regex_list, ios10_release, keep_builtin_filters, global_vars)
+        n.convert_filter(sandbox_filter.convert_filter_callback, infile,
+        regex_list, ios_major_version, keep_builtin_filters, global_vars)
     logger.info("operation nodes after filter conversion")
     for idx, node in enumerate(operation_nodes):
         logger.info("%d: %s", idx, node.str_debug())
@@ -291,7 +294,9 @@ def main():
         num_operation_nodes = (end - start) / 8
         logger.info("number of operation nodes: %u" % num_operation_nodes)
 
-        operation_nodes = create_operation_nodes(f, regex_list, num_operation_nodes, is_ios_more_than_10_release(args.release), args.keep_builtin_filters, global_vars)
+        operation_nodes = create_operation_nodes(f, regex_list,
+            num_operation_nodes, get_ios_major_version(args.release),
+            args.keep_builtin_filters, global_vars)
 
         for i in range(0, num_profiles):
             if (is_ios_more_than_10_release(args.release)):
@@ -350,7 +355,9 @@ def main():
         num_operation_nodes = (end - start) / 8
         logger.info("number of operation nodes: %d ; start: %#x" % (num_operation_nodes, start))
 
-        operation_nodes = create_operation_nodes(f, regex_list, num_operation_nodes, is_ios_more_than_10_release(args.release), args.keep_builtin_filters, global_vars)
+        operation_nodes = create_operation_nodes(f, regex_list,
+            num_operation_nodes, get_ios_major_version(args.release),
+            args.keep_builtin_filters, global_vars)
         out_fname = os.path.join(out_dir, os.path.splitext(os.path.basename(args.filename))[0])
         process_profile(f, out_fname, sb_ops, ops_to_reverse, op_table, operation_nodes)
 

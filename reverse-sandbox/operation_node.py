@@ -302,8 +302,11 @@ class NonTerminalNode():
     def is_last_regular_expression(self):
         return self.filter_id == 0x81 and self.argument_id == num_regex-1
 
-    def convert_filter(self, convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars):
-        (self.filter, self.argument) = convert_fn(f, ios10_release, keep_builtin_filters, global_vars, regex_list, self.filter_id, self.argument_id)
+    def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
+            keep_builtin_filters, global_vars):
+        (self.filter, self.argument) = convert_fn(f, ios_major_version,
+            keep_builtin_filters, global_vars, regex_list, self.filter_id,
+            self.argument_id)
 
     def is_non_terminal_deny(self):
         if self.match.is_non_terminal() and self.unmatch.is_terminal():
@@ -379,9 +382,11 @@ class OperationNode():
         elif self.is_non_terminal():
             self.parse_non_terminal()
 
-    def convert_filter(self, convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars):
+    def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
+            keep_builtin_filters, global_vars):
         if self.is_non_terminal():
-            self.non_terminal.convert_filter(convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars)
+            self.non_terminal.convert_filter(convert_fn, f, regex_list,
+                ios_major_version, keep_builtin_filters, global_vars)
 
     def str_debug(self):
         ret = "(%02x) " % (self.offset)
