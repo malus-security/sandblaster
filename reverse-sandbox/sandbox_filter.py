@@ -442,7 +442,6 @@ def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
         logger.warn("no function for filter {}".format(filter_id))
         return (None, None)
     if filter["arg_process_fn"] == "get_filter_arg_string_by_offset_with_type":
-        print filter, hex(filter_id), hex(filter_arg)
         (append, result) = globals()[filter["arg_process_fn"]](f, filter_arg)
         if filter_id == 0x01 and append == "path":
             append = "subpath"
