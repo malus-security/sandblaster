@@ -121,10 +121,10 @@ def node_parse(re, i, regex_list, node_idx):
     logger.debug('node idx:{:#010x} type: {:#02x} arg: {:#010x}' \
         ' transition: {:#010x}'.format(node_idx, node_type,node_arg,
             node_transition))
-    if node_type in node_type_dispatch_table:
-        regex_list.append(
-            node_type_dispatch_table[node_type](
-                node_type, node_arg, node_transition, node_idx))
+    assert(node_type in node_type_dispatch_table)
+    regex_list.append(
+        node_type_dispatch_table[node_type](
+            node_type, node_arg, node_transition, node_idx))
     return i
 
 def class_parse(re, i, classes, class_idx):
