@@ -451,7 +451,8 @@ def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
         return (filter["name"] + append, result)
     result = globals()[filter["arg_process_fn"]](f, filter_arg)
     if result == None and not (filter["name"] == "debug-mode" or
-            (filter["name"] == "extension" and ios_major_version <= 4)):
+            (filter["name"] in ["extension", "mach-extension"]
+                and ios_major_version <= 5)):
         logger.warn("result of calling arg_process_fn for filter {} is none".format(filter_id))
         return (None, None)
     return (filter["name"], result)
