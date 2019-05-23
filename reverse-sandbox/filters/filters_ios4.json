@@ -1,6 +1,6 @@
 {
     "0x01":{
-        "name":"path",
+        "name":"regex",
         "arg_process_fn":"get_filter_arg_regex_by_id"
     },
     "0x02":{
@@ -12,15 +12,15 @@
         "arg_process_fn":"get_filter_arg_octal_integer"
     },
     "0x04":{
-        "name":"ipc-posix-name",
+        "name":"ipc-posix-name-regex",
         "arg_process_fn":"get_filter_arg_regex_by_id"
     },
     "0x05":{
-        "name":"global-name",
+        "name":"global-name-regex",
         "arg_process_fn":"get_filter_arg_regex_by_id"
     },
     "0x06":{
-        "name":"local-name",
+        "name":"local-name-regex",
         "arg_process_fn":"get_filter_arg_regex_by_id"
     },
     "0x07":{
@@ -40,7 +40,7 @@
         "arg_process_fn":"get_filter_arg_owner"
     },
     "0x0b":{
-        "name":"iokit-user-client-class",
+        "name":"iokit-user-client-class-regex",
         "arg_process_fn":"get_filter_arg_regex_by_id"
     },
     "0x0c":{
