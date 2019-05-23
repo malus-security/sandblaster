@@ -15,12 +15,15 @@ def read_filters(file_path):
 class Filters(object):
 
     filters_ios4 = read_filters('filters/filters_ios4.json')
+    filters_ios6 = read_filters('filters/filters_ios6.json')
     filters_ios10 = read_filters('filters/filters_ios10.json')
 
     @staticmethod
     def get_filters(ios_major_version):
         if ios_major_version <= 4:
             return Filters.filters_ios4
+        if ios_major_version <= 6:
+            return Filters.filters_ios6
         return Filters.filters_ios10
 
     @staticmethod

@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 #import logging as logger
 from regex_parser_v1 import RegexParser as RegexParserV1
+from regex_parser_v2 import RegexParser as RegexParserV2
 from regex_parser_v3 import RegexParser as RegexParserV3
 
 class Node():
@@ -462,6 +463,8 @@ def create_regex_list(re):
     i = 4
     if version == 1:
         RegexParserV1.parse(re, i, regex_list)
+    elif version == 2:
+        RegexParserV2.parse(re, i, regex_list)
     elif version == 3:
         RegexParserV3.parse(re, i, regex_list)
     else:
