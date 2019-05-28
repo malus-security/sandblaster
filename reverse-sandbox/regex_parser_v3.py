@@ -94,8 +94,8 @@ def parse_character_class(re, i, regex_list):
             value += "%s" % (chr(values[j]))
     value += "]"
     regex_list.append({
-        "pos": i-6,
-        "nextpos": i + 2 * num - 1 - 6,
+        "pos": i-6-1,
+        "nextpos": i + 2 * num - 6,
         "type": node_type,
         "value": value
         })
