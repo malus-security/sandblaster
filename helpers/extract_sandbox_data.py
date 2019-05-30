@@ -267,7 +267,6 @@ def extract_bundle_profiles(binary: lief.MachO.Binary, ios_version: int):
         if section.name == '__text':
             continue
         content = bytes(section.content)
-        print(section, len(matches))
         for index in findall(content, b'\x00\x80'):
             if check_bundle(content, index, ios_version):
                 matches.append(content[index:])
