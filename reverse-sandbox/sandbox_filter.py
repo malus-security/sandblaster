@@ -12,7 +12,6 @@ from filters import Filters
 
 logging.config.fileConfig("logger.config")
 logger = logging.getLogger(__name__)
-import logging as logger
 
 ios_major_version = 4
 keep_builtin_filters = False

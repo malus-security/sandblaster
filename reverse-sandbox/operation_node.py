@@ -8,7 +8,6 @@ import logging.config
 
 logging.config.fileConfig("logger.config")
 logger = logging.getLogger(__name__)
-import logging as logger
 
 class TerminalNode():
     """Allow or Deny end node in binary sandbox format
