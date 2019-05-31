@@ -7,7 +7,6 @@ import logging.config
 logging.config.fileConfig("logger.config")
 logger = logging.getLogger(__name__)
 
-#import logging as logger
 from regex_parser_v1 import RegexParser as RegexParserV1
 from regex_parser_v2 import RegexParser as RegexParserV2
 from regex_parser_v3 import RegexParser as RegexParserV3
