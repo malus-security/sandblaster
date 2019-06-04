@@ -6,7 +6,7 @@ The technical report [SandBlaster: Reversing the Apple Sandbox](https://arxiv.or
 
 SandBlaster relied on previous work by [Dionysus Blazakis](https://github.com/dionthegod/XNUSandbox) and Stefan Esser's [code](https://github.com/sektioneins/sandbox_toolkit) and [slides](https://www.slideshare.net/i0n1c/ruxcon-2014-stefan-esser-ios8-containers-sandboxes-and-entitlements).
 
-The reverser (in the `reverse-sandbox/` folder) runs on any Python running platform. The helper tools in `tools/sandbox_toolkit/` run on macOS only.
+The reverser (in the `reverse-sandbox/` folder) and the helper tool (in the `helpers/` folder) run on any Python running platform.
 
 SandBlaster may be installed and run standalone, though we recommend installing and running it from within [iExtractor](https://github.com/malus-security/iExtractor). Check the [iExtractor documentation](https://github.com/malus-security/iExtractor/blob/master/README.md) for information.
 
@@ -66,8 +66,6 @@ The `-psb` option for `reverse_sandbox.py` prints out the sandbox profiles part 
 The `reverse_sandbox.py` script needs to be run in its directory (`reverse-sandbox/`) since it needs the other Python modules and the `logger.config` file.
 
 ## Internals
-
-The `tools/` subfolder in the repository stores external tools, in this case [sandbox_toolkit](https://github.com/sektioneins/sandbox_toolkit) used for extracting the sandbox operations and the binary sandbox profiles.
 
 The `helpers/` subfolder contains helper scripts that provide a nicer interface for the external tools.
 
