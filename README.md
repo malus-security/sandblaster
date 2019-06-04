@@ -12,52 +12,44 @@ SandBlaster may be installed and run standalone, though we recommend installing 
 
 ## Installation
 
-SandBlaster requires Python for the reverser (in `reverse-sandbox/`), Bash for helper scripts (in `helpers/`) and tools from the [sandbox_toolkit](https://github.com/sektioneins/sandbox_toolkit) (in `tools/`).
+SandBlaster requires Python2 for the reverser (in `reverse-sandbox/`), Python3 with `lief` library for helper script (in `helpers/`).
 
-After cloning the SandBlaster repository, you have to clone required tools as submodules:
+After cloning the SandBlaster repository, you have to install `lief` for Python3:
+```
+pip3 install lief
+```
 
-```
-git submodule update --init tools/sandbox_toolkit
-```
-
-Then you build the `extract_sbops` and `extract_sbprofiles` tools:
-
-```
-cd tools/sandbox_toolkit/extract_sbops
-make
-cd ../extract_sbprofiles
-make
-```
+If the installation of `lief` fails you need compile to it. More information about how to compile it can be found on the [wiki page](https://lief.quarkslab.com/doc/stable/compilation.html).
 
 ## Usage
 
-In order to use SandBlaster you need access to the binary sandbox profiles and the sandbox operations, a set of strings that define sandbox-specific actions. Sandbox operations are extracted from the kernelcache using the `helpers/extract_sandbox_operations` script, which in turn calls `tools/sandbox_toolkit/extract_sbops/extract_sbops`. Sandbox profiles are extracted either from the kernel sandbox extension (as a bundle from iOS >= 9) or from the `sandboxd` file in the iOS filesystem (for iOS <= 8) using the `helpers/extract_sandbox_profiles` script, which in turn calls `tools/sandbox_toolkit/extract_sbprofiles/extract_sbprofiles`.
+In order to use SandBlaster you need access to the binary sandbox profiles and the sandbox operations, a set of strings that define sandbox-specific actions. Sandbox operations and sandbox profiles are extracted using the `helpers/extract_sandbox_data.py` script. Sandbox profiles are extracted from the kernel sandbox extension (as a bundle for iOS 4 and 9-11) or from kernel cache (as a bundle for iOS 12) or from the `sandboxd` file in the iOS filesystem (for iOS 5-8). Sandbox operations are extracted either from kernel extension (for iOS 4-11) or from kernel cache (for iOS 12).
 
 So, as input data, SandBlaster requires the kernelcache, the kernel sandbox extension and the `sandboxd` file. Information and scripts on extracting them from a publicly available IPSW (*iPhone Software*) file is presented by [iExtractor](https://github.com/malus-security/iExtractor).
 
-Below are the steps and commands to reverse the sandbox profiles for iOS 8.4.1, assuming the kernelcache and the `sandboxd` file are available:
+Below are the steps and commands to reverse the sandbox profiles for iOS 8.4.1, assuming the sandbox kernel extension (`com.apple.security.sandbox.kext`) and the `sandboxd` file are available:
 
 ```
 # Extract sandbox operations from kernelcache.
 cd helpers/
-./extract_sandbox_operations iPad2,1_8.4.1_12H321.kernelcache.mach.arm 8.4.1 > iPad2,1_8.4.1_12H321.sb_ops
+./extract_sandbox_data.py -o iPad2,1_8.4.1_12H321.sb_ops iPad2,1_8.4.1_12H321.com.apple.security.sandox.kext 8.4.1
 # Extract binary sandbox profile files from sandboxd.
 mkdir iPad2,1_8.4.1_12H321.sandbox_profiles
-./extract_sandbox_profiles iPad2,1_8.4.1_12H321.sandboxd 8.4.1 iPad2,1_8.4.1_12H321.sandbox_profiles/
+./extract_sandbox_data.py -O iPad2,1_8.4.1_12H321.sandbox_profiles/ iPad2,1_8.4.1_12H321.sandboxd 8.4.1
 # Reverse all binary sandbox profiles.
 cd ../reverse-sandbox/
 mkdir iPad2,1_8.4.1_12H321.reversed_profiles
 for i in ../helpers/iPad2,1_8.4.1_12H321.sandbox_profiles/*; do python reverse_sandbox.py -r 8.4.1 -o ../helpers/iPad2,1_8.4.1_12H321.sb_ops -d iPad2,1_8.4.1_12H321.reversed_profiles/ "$i"; done
 ```
 
-Below are the steps and commands to reverse the sandbox profiles for iOS 9.3, assuming the kernelcache and the kernel sandbox extension (`com.apple.security.sandbox.kext`) are available:
+Below are the steps and commands to reverse the sandbox profiles for iOS 9.3, assuming the sandbox kernel extension (`com.apple.security.sandbox.kext`) is available:
 
 ```
 # Extract sandbox operations from kernelcache.
 cd helpers/
-./extract_sandbox_operations iPhone5,1_9.3_13E237.kernelcache.mach.arm 9.3 > iPhone5,1_9.3_13E237.sb_ops
+./extract_sandbox_data.py -o iPhone5,1_9.3_13E237.sb_ops iPhone5,1_9.3_13E237.com.apple.security.sandox.kext 9.3
 # Extract sandbox profile bundle from kernel sandbox extension.
-./extract_sandbox_profiles iPhone5,1_9.3_13E237.com.apple.security.sandox.kext 9.3
+./extract_sandbox_data.py -O . iPhone5,1_9.3_13E237.com.apple.security.sandox.kext 9.3
 cd ../reverse-sandbox/
 # Reverse all binary sandbox profiles in sandbox bundle.
 mkdir iPhone5,1_9.3_13E237.reversed_profiles
@@ -67,7 +59,7 @@ python reverse_sandbox.py -r 9.3 -o ../helpers/iPhone5,1_9.3_13E237.sb_ops -d iP
 python reverse_sandbox.py -r 9.3 -o ../helpers/iPhone5,1_9.3_13E237.sb_ops -d iPhone5,1_9.3_13E237.reversed_profiles/ ../helpers/sandbox_bundle
 ```
 
-The extraction of the binary sandbox profiles differs between iOS <= 8 and iOS >= 9. For iOS 7 and iOS 8 the binary sandbox profiles are stored in the `sandboxd` file. Since iOS >= 9 the binary sandbox profiles are stored in a sandbox bundle in the kernel sandbox extension. The `helpers/extract_sandbox_profiles` script extracts them appropriately depending on the iOS version.
+The extraction of the binary sandbox profiles differs between iOS <= 8 and iOS >= 9. Since iOS >= 9 the binary sandbox profiles are stored in a sandbox bundle in the kernel sandbox extension. The `helpers/extract_sandbox_data.py` script extracts them appropriately depending on the iOS version.
 
 The `-psb` option for `reverse_sandbox.py` prints out the sandbox profiles part of a sandbox bundle without doing the actual reversing.
 
@@ -90,6 +82,4 @@ The actual reverser is part of the `reverse-sandbox/` folder. Files here can be 
 
 ## Supported iOS Versions
 
-SandBlaster works for iOS version 7 onwards including iOS 11. Apple has been making updates to the binary format of the sandbox profiles: since iOS 9 sandbox profiles are stored in a bundle, since iOS 10 strings are aggregated together in a specialied binary format. iOS 11 didn't bring any change to the format.
-
-Earlier version of iOS (<= 6) use a different format that SandBlaster doesn't (yet) support. Contributions are welcome.
+SandBlaster works for iOS version 4 onwards including iOS 12. Apple has been making updates to the binary format of the sandbox profiles: since iOS 9 sandbox profiles are stored in a bundle, since iOS 10 strings are aggregated together in a specialied binary format. iOS 11 didn't bring any change to the format.
