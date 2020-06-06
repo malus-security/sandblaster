@@ -10,6 +10,8 @@ The reverser (in the `reverse-sandbox/` folder) runs on any Python running platf
 
 SandBlaster may be installed and run standalone, though we recommend installing and running it from within [iExtractor](https://github.com/malus-security/iExtractor). Check the [iExtractor documentation](https://github.com/malus-security/iExtractor/blob/master/README.md) for information.
 
+iExtractor is open source software released under the 3-clause BSD license.
+
 ## Installation
 
 SandBlaster requires Python for the reverser (in `reverse-sandbox/`), Bash for helper scripts (in `helpers/`) and tools from the [sandbox_toolkit](https://github.com/sektioneins/sandbox_toolkit) (in `tools/`).
