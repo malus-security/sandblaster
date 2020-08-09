@@ -21,3 +21,4 @@ TAGS
 *.log
 *.bin
 core
+.DS_STORE

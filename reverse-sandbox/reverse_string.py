@@ -349,7 +349,7 @@ def main():
     ss = SandboxString()
     my_global_vars = ["FRONT_USER_HOME", "HOME", "PROCESS_TEMP_DIR"]
     l = ss.parse_byte_string(s[4:], my_global_vars)
-    print list(set(l))
+    print(list(set(l)))
 
 
 if __name__ == "__main__":

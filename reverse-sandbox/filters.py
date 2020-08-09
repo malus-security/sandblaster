@@ -6,7 +6,7 @@ def read_filters():
     with open('filters.json') as data:
         temp = json.load(data)
 
-        for key, value in temp.iteritems():
+        for key, value in temp.items():
             filters[int(str(key), 16)] = value
 
     return filters
