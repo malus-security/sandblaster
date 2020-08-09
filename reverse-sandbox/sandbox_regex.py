@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import logging
 import logging.config
@@ -491,7 +491,7 @@ def main():
             logger.info("total_re_length: 0x%x", re_length)
             re_debug_str = "re: [", ", ".join([hex(i) for i in re]), "]"
             logger.info(re_debug_str)
-            print parse_regex(re)
+            print(parse_regex(re))
 
 
 if __name__ == "__main__":

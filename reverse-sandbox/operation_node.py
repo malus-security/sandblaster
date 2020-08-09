@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import struct
@@ -384,7 +384,7 @@ class OperationNode():
             self.non_terminal.convert_filter(convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars)
 
     def str_debug(self):
-        ret = "(%02x) " % (self.offset)
+        ret = "(%02x) " % (int)(self.offset)
         if self.is_terminal():
             ret += "terminal: "
             ret += str(self.terminal)
@@ -419,7 +419,7 @@ class OperationNode():
         return self.raw == other.raw
 
     def __hash__(self):
-        return self.offset
+        return (int)(self.offset)
 
 
 # Operation nodes processed so far.
@@ -589,9 +589,9 @@ def print_operation_node_graph(g):
         return
     message = ""
     for node_iter in g.keys():
-        message += "0x%x (%s) (%s) (decision: %s): [ " % (node_iter.offset, str(node_iter), g[node_iter]["type"], g[node_iter]["decision"])
+        message += "0x%x (%s) (%s) (decision: %s): [ " % ((int)(node_iter.offset), str(node_iter), g[node_iter]["type"], g[node_iter]["decision"])
         for edge in g[node_iter]["list"]:
-            message += "0x%x (%s) " % (edge.offset, str(edge))
+            message += "0x%x (%s) " % ((int)(edge.offset), str(edge))
         message += "]\n"
     logger.debug(message)
 
@@ -1675,7 +1675,7 @@ def reduce_operation_node_graph(g):
             c_idx += 1
             if c_idx >= l:
                 break
-            rn = rg.get_vertice_by_value(g.keys()[c_idx])
+            rn = rg.get_vertice_by_value(list(g.keys())[c_idx])
             if not re.search("entitlement-value", str(rn)):
                 break
             prevs_rv = rg.get_prev_vertices(rv)
@@ -1715,7 +1715,7 @@ def main():
 
     # Extract node for 'default' operation (index 0).
     default_node = find_operation_node_by_offset(operation_nodes, sb_ops_offsets[0])
-    print "(%s default)" % (default_node.terminal)
+    print("(%s default)" % (default_node.terminal))
 
     # For each operation expand operation node.
     #for idx in range(1, len(sb_ops_offsets)):
@@ -1736,7 +1736,7 @@ def main():
         else:
             if node.terminal:
                 if node.terminal.type != default_node.terminal.type:
-                    print "(%s %s)" % (node.terminal, operation)
+                    print("(%s %s)" % (node.terminal, operation))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 iOS/OS X sandbox decompiler
@@ -154,7 +154,7 @@ def display_sandbox_profiles(f, re_table_offset, num_sb_ops, ios10_release):
         boundary = struct.unpack("<H", f.read(2))[0]
         name = extract_string_from_offset(f, name_offset)
 
-        print name
+        print(name)
 
     logger.info("Found %d sandbox profiles." % num_profiles)
 
@@ -196,7 +196,7 @@ def main():
 
     if args.filename is None:
         parser.print_usage()
-        print "no sandbox profile/bundle file to reverse"
+        print("no sandbox profile/bundle file to reverse")
         sys.exit(1)
 
     # Read sandbox operations.
@@ -209,7 +209,7 @@ def main():
         for op in args.operation:
             if op not in sb_ops:
                 parser.print_usage()
-                print "unavailable operation: {}".format(op)
+                print("unavailable operation: {}".format(op))
                 sys.exit(1)
             ops_to_reverse.append(op)
 
@@ -247,7 +247,7 @@ def main():
         if header == 0x8000:
             display_sandbox_profiles(f, re_table_offset, num_sb_ops, is_ios_more_than_10_release(args.release))
         else:
-            print "cannot print sandbox profiles list; filename {} is not a sandbox bundle".format(args.filename)
+            print("cannot print sandbox profiles list; filename {} is not a sandbox bundle".format(args.filename))
         sys.exit(0)
 
     global_vars = None
@@ -279,7 +279,7 @@ def main():
                 break
         start = f.tell()
         end = re_table_offset * 8
-        num_operation_nodes = (end - start) / 8
+        num_operation_nodes = (end - start) // 8
         logger.info("number of operation nodes: %u" % num_operation_nodes)
 
         operation_nodes = create_operation_nodes(f, regex_list, num_operation_nodes, is_ios_more_than_10_release(args.release), args.keep_builtin_filters, global_vars)
