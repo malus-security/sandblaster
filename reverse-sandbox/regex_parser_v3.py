@@ -73,7 +73,7 @@ def parse_character_class(re, i, regex_list):
         values.append(re[i+2*j+1])
     first = values[0]
     last = values[2*num-1]
-    # In case of exlucdes.
+    # In case of excludes.
     if (first > last):
         node_type = "class_exclude"
         value += "^"
