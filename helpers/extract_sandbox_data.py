@@ -68,10 +68,22 @@ def get_cstring_section(binary: lief.MachO.Binary):
         return sects[0]
     return binary.get_section(CSTRING_SECTION)
 
+def get_section(binary: lief.MachO.FatBinary,
+        segment_name: str, section_name: str):
+    """Returns the section whose name is section_name and is located inside
+    the segment whose name is segment_name from the given MachO bianry.
+    """
+    seg = binary.get_segment(segment_name)
+    if not seg:
+        return None
+    sects = [s for s in seg.sections if s.name == section_name]
+    assert len(sects) <= 1
+    return sects[0] if len(sects) > 0 else None
+
 
 def get_xref(binary: lief.MachO.Binary, vaddr: int):
     """Custom cross reference implementation which supports tagged pointers
-    from iOS 12. Searches for pointers in the biven MachO binary to the given
+    from iOS 12. Searches for pointers in the given MachO binary to the given
     virtual address. Returns a list of all such pointers.
     """
 
@@ -301,20 +313,27 @@ def findall(searchin, pattern):
         i = searchin.find(pattern, i+1)
 
 
-def check_regex(data: bytes, base_index: int):
+def check_regex(data: bytes, base_index: int, ios_version: int):
     """ Checks if the regular expression(from sandbox profile) at offset
     base_index from data is valid for newer versions of iOS(>=8).
     """
 
     if base_index + 0x10 > len(data):
         return False
-    size = struct.unpack('<I', data[base_index: base_index+0x4])[0]
-    version = struct.unpack('>I', data[base_index+0x4: base_index+0x8])[0]
+    if ios_version >= 13:
+        size = struct.unpack('<H', data[base_index: base_index+0x2])[0]
+        version = struct.unpack('>I', data[base_index+0x2: base_index+0x6])[0]
+    else:
+        size = struct.unpack('<I', data[base_index: base_index+0x4])[0]
+        version = struct.unpack('>I', data[base_index+0x4: base_index+0x8])[0]
     if size > 0x1000 or size < 0x8 or base_index + size + 4 > len(data):
         return False
     if version != 3:
         return False
-    subsize = struct.unpack('<H', data[base_index+0x8: base_index+0xa])[0]
+    if ios_version >= 13:
+        subsize = struct.unpack('<H', data[base_index+0x6: base_index+0x8])[0]
+    else:
+    	subsize = struct.unpack('<H', data[base_index+0x8: base_index+0xa])[0]
     return size == subsize + 6
 
 def check_bundle(data: bytes, base_index: int, ios_version: int):
@@ -326,27 +345,53 @@ def check_bundle(data: bytes, base_index: int, ios_version: int):
     if len(data) - base_index < 50:
         return False
     re_offset, aux = struct.unpack('<2H', data[base_index+2:base_index+6])
-    if ios_version >= 12:
+    
+    if ios_version >= 13:
+        count = struct.unpack('<H', data[base_index+8:base_index+10])[0]
+        if count < 0x10:
+            return False
+    elif ios_version >= 12:
         count = (aux - re_offset)*4
         # bundle should be big
         if count < 0x10:
             return False
     else:
         count = aux
+    
     if count > 0x1000 or re_offset < 0x10:
         return False
-    re_offset = base_index + re_offset*8
-    if len(data) - re_offset < count * 2:
-        return False
-    for off_index in range(re_offset, re_offset + 2*count, 2):
+
+    if ios_version >= 13:
+        re_offset = base_index + 12
+
+        op_nodes_count = struct.unpack('<H', data[base_index+2:base_index+4])[0]
+        sb_ops_count = struct.unpack('<H', data[base_index+4:base_index+6])[0]
+        sb_profiles_count = struct.unpack('<H', data[base_index+6:base_index+8])[0]
+        global_table_count = struct.unpack('<B', data[base_index+10:base_index+11])[0]
+        debug_table_count = struct.unpack('<B', data[base_index+11:base_index+12])[0]
+        
+        # base_index will be now at the of op_nodes
+        base_index += 12 + (count + global_table_count + debug_table_count)*2 \
+                    + (2 + sb_ops_count) * 2 * sb_profiles_count \
+                    +  op_nodes_count * 8 + 4
+
+    else:
+        re_offset = base_index + re_offset * 8
+        if len(data) - re_offset < count * 2:
+            return False
+
+    for off_index in range(re_offset, re_offset + 2 * count, 2):
         index = struct.unpack('<H', data[off_index:off_index+2])[0]
         if index == 0:
             if off_index < re_offset + 2*count - 4:
                 return False
             continue
+
         index = base_index + index*8
-        if not check_regex(data, index):
+        
+        if not check_regex(data, index, ios_version):
             return False
+    
     return True
 
 
