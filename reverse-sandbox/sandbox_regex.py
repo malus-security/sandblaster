@@ -467,7 +467,7 @@ def create_regex_list(re):
     elif version == 3:
         RegexParserV3.parse(re, i, regex_list)
     else:
-        logger.critical("No parser available for regex version {:x}".format(vestion))
+        logger.critical("No parser available for regex version {:x}".format(version))
 
 
 
@@ -491,7 +491,6 @@ def parse_regex(re):
     g.combine_start_end_nodes()
     logger.debug(g)
     return g.regex
-    #return [ g.unified_regex ]
 
 
 import sys
