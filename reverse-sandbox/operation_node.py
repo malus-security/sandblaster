@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
+import copy
 import sys
 import struct
 import re
+from os import path
 import logging
 import logging.config
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(path.join(path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 class TerminalNode():
@@ -966,6 +968,34 @@ class ReducedVertice():
             result_str += level*"\t" + "</require>\n"
         return result_str
 
+    def get_paths(self, rg, paths, path):
+        next_vertices = rg.get_next_vertices(self)
+        if self.is_type_start():
+            for next_node in next_vertices:
+                next_node._get_paths(rg, paths, path)
+        # TODO: modifica daca e entitlement
+        elif self.is_type_single() or self.is_type_require_entitlement():
+            name, arg = self.value.values()
+            if self.is_not and arg:
+                to_add = f'require-not({name}({arg}))'
+            elif self.is_not:
+                to_add = f'require-not({name})'
+            elif arg:
+                to_add = f'{name}({arg})'
+            else:
+                to_add = name
+            path.append(to_add)
+            if not next_vertices:
+                paths.append(copy.deepcopy(path))
+            else:
+                next_vertices[0]._get_paths(rg, paths, path)
+            path.pop()
+        elif self.is_type_require_all():
+            next_vertices[0]._get_paths(rg, paths, path)
+        elif self.is_type_require_any():
+            for next in next_vertices:
+                next._get_paths(rg, paths, path)
+
     def __str__(self):
         return self.recursive_str(1, False)
 
@@ -1648,6 +1678,13 @@ class ReducedGraph():
             out_f.write("\t\t</filters>\n")
             out_f.write("\t</operation>\n")
 
+    def get_dependency_graph(self, default_node):
+        paths = []
+        start_vertices = filter(lambda v: v.type != default_node.type,
+                self.get_start_vertices())
+        for v in start_vertices:
+            v.get_paths(self, paths, [])
+        return paths
 
 def reduce_operation_node_graph(g):
     # Create reduced graph.
@@ -1718,8 +1755,8 @@ def main():
     print("(%s default)" % (default_node.terminal))
 
     # For each operation expand operation node.
-    #for idx in range(1, len(sb_ops_offsets)):
-    for idx in range(10, 11):
+    for idx in range(1, len(sb_ops_offsets)):
+    # for idx in range(10, 11):
         offset = sb_ops_offsets[idx]
         operation = sb_ops[idx]
         node = find_operation_node_by_offset(operation_nodes, offset)

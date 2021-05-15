@@ -1,9 +1,10 @@
+from os import path
 import json
 
 def read_filters():
     temp = {}
     filters = {}
-    with open('filters.json') as data:
+    with open(path.join(path.dirname(__file__), "filters.json")) as data:
         temp = json.load(data)
 
         for key, value in temp.items():

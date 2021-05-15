@@ -16,13 +16,13 @@ import logging
 import logging.config
 import argparse
 import os
-import re
 import operation_node
 import sandbox_filter
 import sandbox_regex
 
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(
+    os.path.join(os.path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 
@@ -141,7 +141,7 @@ def display_sandbox_profiles(f, re_table_offset, num_sb_ops, ios10_release):
             break
     start = f.tell()
     end = re_table_offset * 8
-    num_operation_nodes = (end - start) / 8
+    num_operation_nodes = (end - start) // 8
     logger.info("number of operation nodes: %u" % num_operation_nodes)
 
     for i in range(0, num_profiles):
@@ -151,7 +151,6 @@ def display_sandbox_profiles(f, re_table_offset, num_sb_ops, ios10_release):
             f.seek(8 + (num_sb_ops + 2) * 2 * i)
 
         name_offset = struct.unpack("<H", f.read(2))[0]
-        boundary = struct.unpack("<H", f.read(2))[0]
         name = extract_string_from_offset(f, name_offset)
 
         print(name)
@@ -170,6 +169,106 @@ def get_global_vars(f, vars_offset, num_vars):
         global_vars.append(s)
     logger.info("global variables are {:s}".format(", ".join(s for s in global_vars)))
     return global_vars
+
+
+def process_profile_graph(sb_ops, op_table, operation_nodes):
+    default_node = operation_node.find_operation_node_by_offset(
+        operation_nodes, op_table[0])
+    graph = {}
+
+    # For each operation expand operation node.
+    for idx in range(1, len(op_table)):
+        offset = op_table[idx]
+        operation = sb_ops[idx]
+
+        # Go past operations not in list, in case list is not empty.
+        logger.info("parsing operation %s (index %d)", operation, idx)
+        node = operation_node.find_operation_node_by_offset(operation_nodes,
+            offset)
+
+        if not node:
+            logger.info("operation %s (index %d) has no operation node", operation, idx)
+            continue
+
+        g = operation_node.build_operation_node_graph(node, default_node)
+        if g:
+            rg = operation_node.reduce_operation_node_graph(g)
+            rg.str_simple_with_metanodes()
+            graph[operation] = rg.get_dependency_graph(default_node.terminal)
+        else:
+            logger.info("no graph for operation %s (index %d)", operation, idx)
+            if node.terminal:
+                if node.terminal.type != default_node.terminal.type:
+                    graph[operation] = []
+
+    return graph
+
+
+def get_graph_for_profile(filename, operations_file, release):
+    sb_ops = [l.strip() for l in open(operations_file)]
+    num_sb_ops = len(sb_ops)
+    logger.info("num_sb_ops: %d", num_sb_ops)
+
+    f = open(filename, "rb")
+    header = struct.unpack("<H", f.read(2))[0]
+
+    re_table_offset = struct.unpack("<H", f.read(2))[0]
+    re_table_count = struct.unpack("<H", f.read(2))[0]
+    logger.debug("header: 0x%x", header)
+    logger.debug("re_table_offset: 0x%x", re_table_offset)
+    logger.debug("re_table_count: 0x%x", re_table_count)
+
+    logger.debug("\n\nregular expressions:\n")
+    regex_list = []
+    if re_table_count > 0:
+        f.seek(re_table_offset * 8)
+        re_offsets_table = struct.unpack("<%dH" % re_table_count, f.read(2 * re_table_count))
+        for offset in re_offsets_table:
+            f.seek(offset * 8)
+            re_length = struct.unpack("<I", f.read(4))[0]
+            re = struct.unpack("<%dB" % re_length, f.read(re_length))
+            logger.debug("total_re_length: 0x%x", re_length)
+            re_debug_str = "re: [", ", ".join([hex(i) for i in re]), "]"
+            logger.debug(re_debug_str)
+            regex_list.append(sandbox_regex.parse_regex(re))
+    logger.debug(regex_list)
+
+    if header == 0x8000:
+        raise Exception("Unable to obtain graph from sandbox bundle")
+    else:
+        if (is_ios_more_than_10_release(release)):
+            f.seek(6)
+            vars_offset = struct.unpack("<H", f.read(2))[0]
+            num_vars = struct.unpack("<H", f.read(2))[0]
+            logger.info("{:d} global vars at offset 0x{:0x}".format(num_vars,
+                vars_offset))
+            global_vars = get_global_vars(f, vars_offset, num_vars)
+            f.seek(10)
+        else:
+            f.seek(6)
+        op_table = struct.unpack("<%dH" % num_sb_ops, f.read(2 * num_sb_ops))
+        for idx in range(1, len(op_table)):
+            offset = op_table[idx]
+            operation = sb_ops[idx]
+            logger.info(
+                "operation %s (index %u) starts at node offset %u (0x%x)",
+                operation, idx, offset, offset)
+
+        # Place file pointer to start of operation nodes area.
+        while True:
+            word = struct.unpack("<H", f.read(2))[0]
+            if word != 0:
+                f.seek(-2, 1)
+                break
+        start = f.tell()
+        end = re_table_offset * 8
+        num_operation_nodes = (end - start) // 8
+        logger.info("number of operation nodes: %d" % num_operation_nodes)
+
+        operation_nodes = create_operation_nodes(f, regex_list,
+            num_operation_nodes, is_ios_more_than_10_release(release),
+            True, global_vars)
+        return process_profile_graph(sb_ops, op_table, operation_nodes)
 
 
 def main():
@@ -291,7 +390,6 @@ def main():
                 f.seek(8 + (num_sb_ops + 2) * 2 * i)
 
             name_offset = struct.unpack("<H", f.read(2))[0]
-            boundary = struct.unpack("<H", f.read(2))[0]
             name = extract_string_from_offset(f, name_offset)
 
             # Go past profiles not in list, in case list is defined.
@@ -311,7 +409,6 @@ def main():
                 logger.info("operation %s (index %u) starts at node offset %u (0x%x)", operation, idx, offset, offset)
             out_fname = os.path.join(out_dir, name + ".sb")
             process_profile(f, out_fname, sb_ops, ops_to_reverse, op_table, operation_nodes)
-
     else:
         if (is_ios_more_than_10_release(args.release)):
             f.seek(6)
@@ -336,7 +433,7 @@ def main():
                 break
         start = f.tell()
         end = re_table_offset * 8
-        num_operation_nodes = (end - start) / 8
+        num_operation_nodes = (end - start) // 8
         logger.info("number of operation nodes: %d" % num_operation_nodes)
 
         operation_nodes = create_operation_nodes(f, regex_list, num_operation_nodes, is_ios_more_than_10_release(args.release), args.keep_builtin_filters, global_vars)

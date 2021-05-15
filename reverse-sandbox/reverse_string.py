@@ -1,10 +1,11 @@
 import sys
+from os import path
 import struct
 import logging
 import time
 
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(path.join(path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 

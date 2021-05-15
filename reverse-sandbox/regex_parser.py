@@ -1,6 +1,7 @@
+from os import path
 import logging
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(path.join(path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 def parse_character(re, i, regex_list):
