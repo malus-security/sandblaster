@@ -30,7 +30,7 @@ def extract_string_from_offset(f, offset):
     """Extract string (literal) from given offset."""
     f.seek(offset * 8)
     len = struct.unpack("<I", f.read(4))[0]-1
-    return '%s' % f.read(len)
+    return f.read(len).decode()
 
 
 def create_operation_nodes(infile, regex_list, num_operation_nodes, ios10_release, keep_builtin_filters, global_vars):
@@ -204,13 +204,14 @@ def process_profile_graph(sb_ops, op_table, operation_nodes):
     return graph
 
 
-def get_graph_for_profile(filename, operations_file, release):
+def get_graph_for_profile(filename, operations_file, release, profile = None):
     sb_ops = [l.strip() for l in open(operations_file)]
     num_sb_ops = len(sb_ops)
     logger.info("num_sb_ops: %d", num_sb_ops)
 
     f = open(filename, "rb")
     header = struct.unpack("<H", f.read(2))[0]
+    global_vars = None
 
     re_table_offset = struct.unpack("<H", f.read(2))[0]
     re_table_count = struct.unpack("<H", f.read(2))[0]
@@ -234,7 +235,66 @@ def get_graph_for_profile(filename, operations_file, release):
     logger.debug(regex_list)
 
     if header == 0x8000:
-        raise Exception("Unable to obtain graph from sandbox bundle")
+        if profile is None:
+            raise Exception("Sandbox bundle detected. Please specify the number of the profile to decompile")
+
+        if (is_ios_more_than_10_release(release)):
+            f.seek(6)
+            vars_offset = struct.unpack("<H", f.read(2))[0]
+            num_vars = struct.unpack("<H", f.read(2))[0]
+            logger.info("{:d} global vars at offset 0x{:0x}".format(num_vars, vars_offset))
+            global_vars = get_global_vars(f, vars_offset, num_vars)
+            f.seek(10)
+        else:
+            f.seek(6)
+        num_profiles = struct.unpack("<H", f.read(2))[0]
+        logger.info("number of profiles in bundle: %d", num_profiles)
+
+        # Place file pointer to start of operation nodes area.
+        if (is_ios_more_than_10_release(release)):
+            f.seek(12 + (num_sb_ops + 2) * 2 * num_profiles)
+        else:
+            f.seek(8 + (num_sb_ops + 2) * 2 * num_profiles)
+        while True:
+            word = struct.unpack("<H", f.read(2))[0]
+            if word != 0:
+                f.seek(-2, 1)
+                break
+        start = f.tell()
+        end = re_table_offset * 8
+        num_operation_nodes = (end - start) // 8
+        logger.info("number of operation nodes: %u" % num_operation_nodes)
+
+        operation_nodes = create_operation_nodes(f, regex_list,
+            num_operation_nodes, is_ios_more_than_10_release(release), True,
+            global_vars)
+
+        for i in range(0, num_profiles):
+            if (is_ios_more_than_10_release(release)):
+                f.seek(12 + (num_sb_ops + 2) * 2 * i)
+            else:
+                f.seek(8 + (num_sb_ops + 2) * 2 * i)
+
+            name_offset = struct.unpack("<H", f.read(2))[0]
+            name = extract_string_from_offset(f, name_offset)
+
+            # Find the specified profile
+            if name != profile:
+                continue
+            logger.info("profile name (offset 0x%x): %s" % (name_offset, name))
+
+            if (is_ios_more_than_10_release(release)):
+                f.seek(12 + (num_sb_ops + 2) * 2 * i + 4)
+            else:
+                f.seek(8 + (num_sb_ops + 2) * 2 * i + 4)
+            op_table = struct.unpack("<%dH" % num_sb_ops, f.read(2 * num_sb_ops))
+            for idx in range(1, len(op_table)):
+                offset = op_table[idx]
+                operation = sb_ops[idx]
+                logger.info("operation %s (index %u) starts at node offset %u (0x%x)", operation, idx, offset, offset)
+
+            return process_profile_graph(sb_ops, op_table, operation_nodes)
+
     else:
         if (is_ios_more_than_10_release(release)):
             f.seek(6)
@@ -269,7 +329,7 @@ def get_graph_for_profile(filename, operations_file, release):
             num_operation_nodes, is_ios_more_than_10_release(release),
             True, global_vars)
         return process_profile_graph(sb_ops, op_table, operation_nodes)
-
+        
 
 def main():
     """Reverse Apple binary sandbox file to SBPL (Sandbox Profile Language) format.

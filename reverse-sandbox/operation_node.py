@@ -968,33 +968,62 @@ class ReducedVertice():
             result_str += level*"\t" + "</require>\n"
         return result_str
 
-    def get_paths(self, rg, paths, path):
+    def _add_ent_to_paths(self, ent, path, paths):
+        to_add = f'require-not({ent})' if self.is_not else ent
+        path.append(to_add)
+        paths.append(copy.deepcopy(path))
+        path.pop()
+
+    def _is_node_ent_val(self):
+        return 'entitlement-value' in self.str_simple() or\
+            self.is_type_require_all() or self.is_type_require_any()
+
+    def _get_simple_filter(self):
+        name, arg = self.value.values()
+        filt = f'{name}({arg})' if arg else name
+        return f'require-not({filt})' if self.is_not else filt
+
+    def _visit_next_nodes(self, next_vertices, rg, paths, path, state):
+        for n in next_vertices:
+            n._get_paths(rg, paths, path, state)
+
+    def _handle_state(self, rg, next_vertices, paths, crt_path, state):
+        crt_path.append(self._get_simple_filter())
+        if state == 'req-any' or not next_vertices:
+            paths.append(copy.deepcopy(crt_path))
+        self._visit_next_nodes(next_vertices, rg, paths, crt_path, state)
+        crt_path.pop()
+
+    def _get_paths(self, rg, paths, crt_path, state):
         next_vertices = rg.get_next_vertices(self)
         if self.is_type_start():
-            for next_node in next_vertices:
-                next_node._get_paths(rg, paths, path)
-        # TODO: modifica daca e entitlement
-        elif self.is_type_single() or self.is_type_require_entitlement():
+            self._visit_next_nodes(next_vertices, rg, paths, crt_path, 'req-any')
+        elif self.is_type_require_entitlement():
             name, arg = self.value.values()
-            if self.is_not and arg:
-                to_add = f'require-not({name}({arg}))'
-            elif self.is_not:
-                to_add = f'require-not({name})'
-            elif arg:
-                to_add = f'{name}({arg})'
+            if next_vertices:
+                for n in next_vertices:
+                    if n._is_node_ent_val():
+                        ent_vals = []
+                        n._get_paths(rg, ent_vals, [], 'req-any')
+                        for val in ent_vals:
+                            ent = f'{name}({arg}, [{val[0]}])'
+                            self._add_ent_to_paths(ent, crt_path, paths)
+                    else:
+                        crt_path.append(self._get_simple_filter())
+                        if state == 'req-any':
+                            paths.append(copy.deepcopy(crt_path))
+                            crt_path.pop()
+                        n._get_paths(rg, paths, crt_path, state)
+                        if state == 'req-all':
+                            crt_path.pop()                        
             else:
-                to_add = name
-            path.append(to_add)
-            if not next_vertices:
-                paths.append(copy.deepcopy(path))
-            else:
-                next_vertices[0]._get_paths(rg, paths, path)
-            path.pop()
+                self._add_ent_to_paths(f'{name}({arg})', crt_path, paths)
+        elif self.is_type_single():
+            self._handle_state(rg, next_vertices, paths, crt_path, state)
         elif self.is_type_require_all():
-            next_vertices[0]._get_paths(rg, paths, path)
+            next_vertices[0]._get_paths(rg, paths, crt_path, 'req-all')
         elif self.is_type_require_any():
-            for next in next_vertices:
-                next._get_paths(rg, paths, path)
+            self._visit_next_nodes(next_vertices, rg, paths, crt_path, 'req-any')
 
     def __str__(self):
         return self.recursive_str(1, False)
@@ -1683,7 +1712,7 @@ class ReducedGraph():
         start_vertices = filter(lambda v: v.type != default_node.type,
                 self.get_start_vertices())
         for v in start_vertices:
-            v.get_paths(self, paths, [])
+            v._get_paths(self, paths, [], 'req-any')
         return paths
 
 def reduce_operation_node_graph(g):
