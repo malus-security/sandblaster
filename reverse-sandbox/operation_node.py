@@ -303,10 +303,10 @@ class NonTerminalNode():
         return self.filter_id == 0x81 and self.argument_id == num_regex-1
 
     def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
-            keep_builtin_filters, global_vars):
+            keep_builtin_filters, global_vars, base_addr):
         (self.filter, self.argument) = convert_fn(f, ios_major_version,
             keep_builtin_filters, global_vars, regex_list, self.filter_id,
-            self.argument_id)
+            self.argument_id, base_addr)
 
     def is_non_terminal_deny(self):
         if self.match.is_non_terminal() and self.unmatch.is_terminal():
@@ -385,10 +385,10 @@ class OperationNode():
             self.parse_non_terminal()
 
     def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
-            keep_builtin_filters, global_vars):
+            keep_builtin_filters, global_vars, base_addr):
         if self.is_non_terminal():
             self.non_terminal.convert_filter(convert_fn, f, regex_list,
-                ios_major_version, keep_builtin_filters, global_vars)
+                ios_major_version, keep_builtin_filters, global_vars, base_addr)
 
     def str_debug(self):
         ret = "(%02x) " % (self.offset)
@@ -435,6 +435,9 @@ processed_nodes = []
 # Number of regular expressions.
 num_regex = 0
 
+# Operation nodes offset.
+operations_offset = 0
+
 
 def has_been_processed(node):
     global processed_nodes
@@ -442,14 +445,18 @@ def has_been_processed(node):
 
 
 def build_operation_node(raw, offset, ios_major_version):
-    node = OperationNode(offset / 8)
+    global operations_offset
+    node = OperationNode((offset - operations_offset) / 8) # why offset / 8 ?
     node.raw = raw
     node.parse_raw(ios_major_version)
     return node
 
 
 def build_operation_nodes(f, num_operation_nodes, ios_major_version):
+    global operations_offset
     operation_nodes = []
+
+    operations_offset = f.tell()
     for i in range(num_operation_nodes):
         offset = f.tell()
         raw = struct.unpack("<8B", f.read(8))
@@ -505,6 +512,9 @@ def ong_add_to_parent_path(g, node, parent_node, nodes_to_process):
 
 def build_operation_node_graph(node, default_node):
     if node.is_terminal():
+        return None
+
+    if default_node.is_non_terminal():
         return None
 
     # If node is non-terminal and has already been processed, then it's a jump rule to a previous operation.

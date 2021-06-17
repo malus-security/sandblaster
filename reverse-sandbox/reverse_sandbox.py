@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 def extract_string_from_offset(f, offset, ios_version):
     """Extract string (literal) from given offset."""
     if ios_version >= 13:
-        f.seek(get_base_addr(f) + offset * 8)
+        f.seek(get_base_addr(f, ios_version) + offset * 8)
         len = struct.unpack("<H", f.read(2))[0]-1
     else:
         f.seek(offset * 8)
@@ -43,12 +43,15 @@ def create_operation_nodes(infile, regex_list, num_operation_nodes,
     operation_nodes = operation_node.build_operation_nodes(infile,
         num_operation_nodes, ios_major_version)
     logger.info("operation nodes")
+    
     for idx, node in enumerate(operation_nodes):
         logger.info("%d: %s", idx, node.str_debug())
-    return operation_nodes
+    
     for n in operation_nodes:
+        print("REV")
         n.convert_filter(sandbox_filter.convert_filter_callback, infile,
-        regex_list, ios_major_version, keep_builtin_filters, global_vars)
+                    regex_list, ios_major_version, keep_builtin_filters,
+                    global_vars, get_base_addr(infile, ios_major_version))
     logger.info("operation nodes after filter conversion")
     for idx, node in enumerate(operation_nodes):
         logger.info("%d: %s", idx, node.str_debug())
@@ -108,7 +111,7 @@ def process_profile(infile, outfname, sb_ops, ops_to_reverse, op_table, operatio
             #rg.dump_xml(operation, outfile_xml)
         else:
             logger.info("no graph for operation %s (index %d)", operation, idx)
-            if node.terminal:
+            if node.terminal and default_node.terminal:
                 if node.terminal.type != default_node.terminal.type:
                     outfile.write("(%s %s)\n" % (node.terminal, operation))
                     outfile_xml.write("\t<operation name=\"%s\" action=\"%s\" />\n" % (operation, node.terminal))
@@ -212,33 +215,35 @@ def get_global_vars(f, vars_offset, num_vars, base_offset):
     logger.info("global variables are {:s}".format(", ".join(s for s in global_vars)))
     return global_vars
 
-def get_base_addr(f):
-    # extract operation node table count
-    f.seek(2)
-    op_nodes_count = struct.unpack('<H', f.read(2))[0]
+def get_base_addr(f, ios_version):
+    if ios_version >= 13:
+        # extract operation node table count
+        f.seek(2)
+        op_nodes_count = struct.unpack('<H', f.read(2))[0]
 
-    # extract sandbox operations count
-    f.seek(4)
-    sb_ops_count = struct.unpack('<H', f.read(2))[0]
+        # extract sandbox operations count
+        f.seek(4)
+        sb_ops_count = struct.unpack('<H', f.read(2))[0]
 
-    # extract sandbox profile count
-    f.seek(6)
-    sb_profiles_count = struct.unpack('<H', f.read(2))[0]
+        # extract sandbox profile count
+        f.seek(6)
+        sb_profiles_count = struct.unpack('<H', f.read(2))[0]
 
-    # extract regular expressions count
-    f.seek(8)
-    regex_table_count = struct.unpack('<H', f.read(2))[0]
+        # extract regular expressions count
+        f.seek(8)
+        regex_table_count = struct.unpack('<H', f.read(2))[0]
 
-    # extract global table count
-    f.seek(10)
-    global_table_count = struct.unpack('<B', f.read(1))[0]
+        # extract global table count
+        f.seek(10)
+        global_table_count = struct.unpack('<B', f.read(1))[0]
 
-    # extract debug table count
-    f.seek(11)
-    debug_table_count = struct.unpack('<B', f.read(1))[0]
+        # extract debug table count
+        f.seek(11)
+        debug_table_count = struct.unpack('<B', f.read(1))[0]
 
-    return 12 + (regex_table_count + global_table_count + debug_table_count)*2 \
-            + (2 + sb_ops_count) * 2 * sb_profiles_count + op_nodes_count * 8 + 4
+        return 12 + (regex_table_count + global_table_count + debug_table_count)*2 \
+                + (2 + sb_ops_count) * 2 * sb_profiles_count + op_nodes_count * 8 + 4
+    return 0
 
 
 def main():
@@ -319,7 +324,7 @@ def main():
         re_offsets_table = struct.unpack("<%dH" % re_table_count, f.read(2 * re_table_count))
         for offset in re_offsets_table:
             if get_ios_major_version(args.release) >= 13:
-                f.seek(get_base_addr(f) + offset * 8) # we need that base addr
+                f.seek(get_base_addr(f, get_ios_major_version(args.release)) + offset * 8)
                 re_length = struct.unpack("<H", f.read(2))[0]
             else:
                 f.seek(offset * 8)
@@ -352,7 +357,7 @@ def main():
             f.seek(10)
             num_vars = struct.unpack("<B", f.read(1))[0]
             logger.info("{:d} global vars at offset 0x{:0x}".format(num_vars, vars_offset))
-            global_vars = get_global_vars(f, vars_offset, num_vars, get_base_addr(f))
+            global_vars = get_global_vars(f, vars_offset, num_vars, get_base_addr(f, get_ios_major_version(args.release)))
             f.seek(6)
         elif get_ios_major_version(args.release) >= 12:
             f.seek(4)
@@ -377,7 +382,7 @@ def main():
         if get_ios_major_version(args.release) >= 13:
             f.seek(2)
             num_operation_nodes = struct.unpack("<H", f.read(2))[0]
-            f.seek(get_base_addr(f) - num_operation_nodes*8)
+            f.seek(get_base_addr(f, get_ios_major_version(args.release)) - num_operation_nodes*8)
         else:
             # Place file pointer to start of operation nodes area.
             if get_ios_major_version(args.release) >= 12:
@@ -401,7 +406,16 @@ def main():
             args.keep_builtin_filters, global_vars)
 
         for i in range(0, num_profiles):
-            if get_ios_major_version(args.release) >= 12:
+            if get_ios_major_version(args.release) >= 13:
+                f.seek(8)
+                regex_table_count = struct.unpack('<H', f.read(2))[0]
+                f.seek(10)
+                global_table_count = struct.unpack('<B', f.read(1))[0]
+                f.seek(11)
+                debug_table_count = struct.unpack('<B', f.read(1))[0]
+                f.seek(12 + (regex_table_count + global_table_count + \
+                        debug_table_count) * 2 + (num_sb_ops + 2) * 2 * i)
+            elif get_ios_major_version(args.release) >= 12:
                 f.seek(14 + (num_sb_ops + 2) * 2 * i)
             elif get_ios_major_version(args.release) >= 10:
                 f.seek(12 + (num_sb_ops + 2) * 2 * i)
@@ -419,7 +433,16 @@ def main():
                     continue
             logger.info("profile name (offset 0x%x): %s" % (name_offset, name))
 
-            if get_ios_major_version(args.release) >= 12:
+            if get_ios_major_version(args.release) >= 13:
+                f.seek(8)
+                regex_table_count = struct.unpack('<H', f.read(2))[0]
+                f.seek(10)
+                global_table_count = struct.unpack('<B', f.read(1))[0]
+                f.seek(11)
+                debug_table_count = struct.unpack('<B', f.read(1))[0]
+                f.seek(12 + (regex_table_count + global_table_count + \
+                        debug_table_count) * 2 + (num_sb_ops + 2) * 2 * i + 4)
+            elif get_ios_major_version(args.release) >= 12:
                 f.seek(14 + (num_sb_ops + 2) * 2 * i + 4)
             elif get_ios_major_version(args.release) >= 10:
                 f.seek(12 + (num_sb_ops + 2) * 2 * i + 4)

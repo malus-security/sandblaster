@@ -19,6 +19,8 @@ class Filters(object):
     filters_ios6 = read_filters('filters/filters_ios6.json')
     filters_ios11 = read_filters('filters/filters_ios11.json')
     filters_ios12 = read_filters('filters/filters_ios12.json')
+    filters_ios13 = read_filters('filters/filters_ios13.json')
+    filters_ios14 = read_filters('filters/filters_ios14.json')
 
     @staticmethod
     def get_filters(ios_major_version):
@@ -30,7 +32,11 @@ class Filters(object):
             return Filters.filters_ios6
         if ios_major_version <= 11:
             return Filters.filters_ios11
-        return Filters.filters_ios12
+        if ios_major_version <= 12:
+            return Filters.filters_ios12
+        if ios_major_version <= 13:
+            return Filters.filters_ios13
+        return Filters.filters_ios14
 
     @staticmethod
     def exists(ios_major_version, id):
