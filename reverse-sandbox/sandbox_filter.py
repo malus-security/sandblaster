@@ -16,10 +16,23 @@ logger = logging.getLogger(__name__)
 ios_major_version = 4
 keep_builtin_filters = False
 global_vars = []
+base_addr = 0
 
 def get_filter_arg_string_by_offset(f, offset):
     """Extract string (literal) from given offset."""
-    f.seek(offset * 8)
+    f.seek(base_addr + offset * 8)
+    if ios_major_version >= 13:
+        len = struct.unpack("<H", f.read(2))[0]
+        s = f.read(len)
+        logger.info("binary string is " + s.encode("hex"))
+        ss = reverse_string.SandboxString()
+        myss = ss.parse_byte_string(s, global_vars)
+        actual_string = ""
+        for sss in myss:
+            actual_string = actual_string + sss + " "
+        actual_string = actual_string[:-1]
+        logger.info("actual string is " + actual_string)
+        return myss
     len = struct.unpack("<I", f.read(4))[0]
     if ios_major_version >= 10:
         f.seek(offset * 8)
@@ -41,10 +54,23 @@ def get_filter_arg_string_by_offset_with_type(f, offset):
     """Extract string from given offset and consider type byte."""
     global ios_major_version
     global keep_builtin_filters
-    f.seek(offset * 8)
+    f.seek(base_addr + offset * 8)
+    if ios_major_version >= 13:
+        len = struct.unpack("<H", f.read(2))[0]
+        s = f.read(len)
+        logger.info("binary string is " + s.encode("hex"))
+        ss = reverse_string.SandboxString()
+        myss = ss.parse_byte_string(s, global_vars)
+        append = "literal"
+        actual_string = ""
+        for sss in myss:
+            actual_string = actual_string + sss + " "
+        actual_string = actual_string[:-1]
+        logger.info("actual string is " + actual_string)
+        return (append, myss)
     len = struct.unpack("<I", f.read(4))[0]
     if ios_major_version >= 10:
-        f.seek(offset * 8)
+        f.seek(base_addr + offset * 8)
         s = f.read(4+len)
         logger.info("binary string is " + s.encode("hex"))
         ss = reverse_string.SandboxString()
@@ -78,14 +104,17 @@ def get_filter_arg_string_by_offset_with_type(f, offset):
 
 def get_filter_arg_string_by_offset_no_skip(f, offset):
     """Extract string from given offset and ignore type byte."""
-    f.seek(offset * 8)
-    len = struct.unpack("<I", f.read(4))[0]-1
+    f.seek(base_addr + offset * 8)
+    if ios_major_version >= 13:
+        len = struct.unpack("<H", f.read(2))[0]-1
+    else:
+        len = struct.unpack("<I", f.read(4))[0]-1
     return '"%s"' % f.read(len)
 
 
 def get_filter_arg_network_address(f, offset):
     """Convert 4 bytes value to network address (host and port)."""
-    f.seek(offset * 8)
+    f.seek(base_addr + offset * 8)
 
     host, port = struct.unpack("<HH", f.read(4))
     host_port_string = ""
@@ -403,7 +432,7 @@ callback function names start with get_filter_arg_.
 """
 
 def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
-        global_vars_arg, re_list, filter_id, filter_arg):
+        global_vars_arg, re_list, filter_id, filter_arg, base_addr_arg):
     """Convert filter from binary form to string.
 
     Binary form consists of filter id and filter argument:
@@ -428,10 +457,14 @@ def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
     global ios_major_version
     global keep_builtin_filters
     global global_vars
+    global base_addr
     keep_builtin_filters = keep_builtin_filters_arg
     ios_major_version = ios_major_version_arg
     global_vars = global_vars_arg
     regex_list = re_list
+    base_addr = base_addr_arg
+
+    print("FILT")
 
     if not Filters.exists(ios_major_version, filter_id):
         logger.warn("filter_id {} not in keys".format(filter_id))
@@ -449,7 +482,7 @@ def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
             return (None, None)
         return (filter["name"] + append, result)
     result = globals()[filter["arg_process_fn"]](f, filter_arg)
-    if result == None and not (filter["name"] == "debug-mode" or
+    if result == None and not ((filter["name"] in ["debug-mode", "syscall-mask", "machtrap-mask", "kernel-mig-routine-mask"]) or
             (filter["name"] in ["extension", "mach-extension"]
                 and ios_major_version <= 5)):
         logger.warn("result of calling arg_process_fn for filter {} is none".format(filter_id))
