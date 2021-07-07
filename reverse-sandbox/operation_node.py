@@ -456,7 +456,10 @@ def build_operation_nodes(f, num_operation_nodes, ios_major_version):
     global operations_offset
     operation_nodes = []
 
-    operations_offset = f.tell()
+    if ios_major_version <= 12:
+        operations_offset = 0
+    else:
+        operations_offset = f.tell()
     for i in range(num_operation_nodes):
         offset = f.tell()
         raw = struct.unpack("<8B", f.read(8))

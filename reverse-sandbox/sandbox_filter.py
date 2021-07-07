@@ -464,8 +464,6 @@ def convert_filter_callback(f, ios_major_version_arg, keep_builtin_filters_arg,
     regex_list = re_list
     base_addr = base_addr_arg
 
-    print("FILT")
-
     if not Filters.exists(ios_major_version, filter_id):
         logger.warn("filter_id {} not in keys".format(filter_id))
         return (None, None)

@@ -48,7 +48,6 @@ def create_operation_nodes(infile, regex_list, num_operation_nodes,
         logger.info("%d: %s", idx, node.str_debug())
     
     for n in operation_nodes:
-        print("REV")
         n.convert_filter(sandbox_filter.convert_filter_callback, infile,
                     regex_list, ios_major_version, keep_builtin_filters,
                     global_vars, get_base_addr(infile, ios_major_version))
