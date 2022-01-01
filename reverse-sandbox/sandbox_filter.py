@@ -2,15 +2,15 @@
 
 import struct
 import re
+from os import path
 import logging
 import logging.config
-import reverse_sandbox
 import reverse_string
 
 from filters import Filters
 
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(path.join(path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 ios10_release = False
@@ -34,7 +34,7 @@ def get_filter_arg_string_by_offset(f, offset):
         logger.info("actual string is " + actual_string)
         return myss
     type = struct.unpack("<B", f.read(1))[0]
-    return '"%s"' % f.read(len)
+    return '"%s"' % f.read(len).decode('ascii')
 
 
 def get_filter_arg_string_by_offset_with_type(f, offset):
@@ -73,14 +73,14 @@ def get_filter_arg_string_by_offset_with_type(f, offset):
     actual_string = f.read(len)
     if actual_string == "/private/var/tmp/launchd/sock" and keep_builtin_filters == False:
         return (append, "###$$$***")
-    return (append, '"%s"' % actual_string)
+    return (append, '"%s"' % actual_string.decode('ascii'))
 
 
 def get_filter_arg_string_by_offset_no_skip(f, offset):
     """Extract string from given offset and ignore type byte."""
     f.seek(offset * 8)
     len = struct.unpack("<I", f.read(4))[0]-1
-    return '"%s"' % f.read(len)
+    return '"%s"' % f.read(len).decode('ascii')
 
 
 def get_filter_arg_network_address(f, offset):

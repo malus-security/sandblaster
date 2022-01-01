@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 
+import copy
 import sys
 import struct
 import re
+from os import path
 import logging
 import logging.config
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(path.join(path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 class TerminalNode():
@@ -966,6 +968,63 @@ class ReducedVertice():
             result_str += level*"\t" + "</require>\n"
         return result_str
 
+    def _add_ent_to_paths(self, ent, path, paths):
+        to_add = f'require-not({ent})' if self.is_not else ent
+        path.append(to_add)
+        paths.append(copy.deepcopy(path))
+        path.pop()
+
+    def _is_node_ent_val(self):
+        return 'entitlement-value' in self.str_simple() or\
+            self.is_type_require_all() or self.is_type_require_any()
+
+    def _get_simple_filter(self):
+        name, arg = self.value.values()
+        filt = f'{name}({arg})' if arg else name
+        return f'require-not({filt})' if self.is_not else filt
+
+    def _visit_next_nodes(self, next_vertices, rg, paths, path, state):
+        for n in next_vertices:
+            n._get_paths(rg, paths, path, state)
+
+    def _handle_state(self, rg, next_vertices, paths, crt_path, state):
+        crt_path.append(self._get_simple_filter())
+        if state == 'req-any' or not next_vertices:
+            paths.append(copy.deepcopy(crt_path))
+        self._visit_next_nodes(next_vertices, rg, paths, crt_path, state)
+        crt_path.pop()
+
+    def _get_paths(self, rg, paths, crt_path, state):
+        next_vertices = rg.get_next_vertices(self)
+        if self.is_type_start():
+            self._visit_next_nodes(next_vertices, rg, paths, crt_path, 'req-any')
+        elif self.is_type_require_entitlement():
+            name, arg = self.value.values()
+            if next_vertices:
+                for n in next_vertices:
+                    if n._is_node_ent_val():
+                        ent_vals = []
+                        n._get_paths(rg, ent_vals, [], 'req-any')
+                        for val in ent_vals:
+                            ent = f'{name}({arg}, [{val[0]}])'
+                            self._add_ent_to_paths(ent, crt_path, paths)
+                    else:
+                        crt_path.append(self._get_simple_filter())
+                        if state == 'req-any':
+                            paths.append(copy.deepcopy(crt_path))
+                            crt_path.pop()
+                        n._get_paths(rg, paths, crt_path, state)
+                        if state == 'req-all':
+                            crt_path.pop()                        
+            else:
+                self._add_ent_to_paths(f'{name}({arg})', crt_path, paths)
+        elif self.is_type_single():
+            self._handle_state(rg, next_vertices, paths, crt_path, state)
+        elif self.is_type_require_all():
+            next_vertices[0]._get_paths(rg, paths, crt_path, 'req-all')
+        elif self.is_type_require_any():
+            self._visit_next_nodes(next_vertices, rg, paths, crt_path, 'req-any')
+
     def __str__(self):
         return self.recursive_str(1, False)
 
@@ -1648,6 +1707,13 @@ class ReducedGraph():
             out_f.write("\t\t</filters>\n")
             out_f.write("\t</operation>\n")
 
+    def get_dependency_graph(self, default_node):
+        paths = []
+        start_vertices = filter(lambda v: v.type != default_node.type,
+                self.get_start_vertices())
+        for v in start_vertices:
+            v._get_paths(self, paths, [], 'req-any')
+        return paths
 
 def reduce_operation_node_graph(g):
     # Create reduced graph.
@@ -1718,8 +1784,8 @@ def main():
     print("(%s default)" % (default_node.terminal))
 
     # For each operation expand operation node.
-    #for idx in range(1, len(sb_ops_offsets)):
-    for idx in range(10, 11):
+    for idx in range(1, len(sb_ops_offsets)):
+    # for idx in range(10, 11):
         offset = sb_ops_offsets[idx]
         operation = sb_ops[idx]
         node = find_operation_node_by_offset(operation_nodes, offset)

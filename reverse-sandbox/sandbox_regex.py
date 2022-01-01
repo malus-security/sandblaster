@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from os import path
 import logging
 import logging.config
 
-logging.config.fileConfig("logger.config")
+logging.config.fileConfig(path.join(path.dirname(__file__), "logger.config"))
 logger = logging.getLogger(__name__)
 
 class Node():
