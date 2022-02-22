@@ -117,6 +117,7 @@ def untag_pointer(tagged_pointer):
 def get_cstring_section(binary: lief.MachO.Binary):
     """Returns the section which stores constant strings from a given MachO
     binary.
+
     """
 
     seg = binary.get_segment('__TEXT')
