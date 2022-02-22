@@ -11,11 +11,24 @@ DATA_SECTION = '__data'
 
 
 def binary_get_word_size(binary: lief.MachO.Binary):
-    """Returns word size of the given binary. It returns 4 for 32bit MachO
-    binaries and 8 for 64bit binaries.
+    """Gets the word size of the given binary
+
+    The Mach-O binary has 'magic' bytes. These bytes can be used for checking
+    whether the binary is 32bit or 64bit.
+    Note: iOS 4 and 5 are different to the other sandbox profiles as they have
+    no magic values.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+
+    Returns:
+        4: for 32bit MachO binaries
+        8: for 64bit MachO binaries
     """
+
     assert (binary.header.magic in
             [lief.MachO.MACHO_TYPES.MAGIC, lief.MachO.MACHO_TYPES.MAGIC_64])
+
     return 4 if binary.header.magic == lief.MachO.MACHO_TYPES.MAGIC else 8
 
 
