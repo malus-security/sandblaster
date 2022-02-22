@@ -33,16 +33,39 @@ def binary_get_word_size(binary: lief.MachO.Binary):
 
 
 def unpack(bytes_list):
-    """Unpack bytes
+    """Unpacks bytes
+
+    The information is stored as little endian so '<' is needed.
+    For 32bit 'I' is needed and for 64bit 'Q'.
+
+    Args:
+        bytes_list: A packed list of bytes.
+
+    Returns:
+        The unpacked 'higher-order' equivalent.
     """
 
-    return struct.unpack('<I' if len(bytes_list) == 4 else '<Q',
-                         bytes(bytes_list))[0]
+    if len(bytes_list) == 4:
+        return struct.unpack('<I', bytes(bytes_list))[0]
+
+    return struct.unpack('<Q', bytes(bytes_list()))[0]
 
 
 def binary_get_string_from_address(binary: lief.MachO.Binary, vaddr: int):
     """Returns the string from a given MachO binary at a given virtual address.
-        The virtual address must be in the cstring section.
+
+        Note: The virtual address must be in the CSTRING section.
+
+        Args:
+            binary: A sandbox profile in its binary form.
+            vaddr: An address represented as an integer.
+
+        Returns:
+            A string with the content stored at the given virtual address.
+
+        Raises:
+            LIEF_ERR("Can't find a segment associated with the virtual address
+             0x{:x}", address);
     """
 
     section = get_cstring_section(binary)
@@ -53,26 +76,42 @@ def binary_get_string_from_address(binary: lief.MachO.Binary, vaddr: int):
     while True:
         try:
             byte = binary.get_content_from_virtual_address(vaddr, 1)
-        except Exception as e:
+        except(Exception,):
             return None
-        if byte == None or len(byte) == 0:
+
+        if byte is None or len(byte) == 0:
             return None
+
         byte = byte[0]
         if byte == 0:
             break
+
         vaddr += 1
         s += chr(byte)
+
     return s
 
 
-def untag_pointer(p):
-    """Returns the untaged pointer. On iOS 12 the first 16 bits(MSB) of a
-    pointer are used to store extra information. We say that the pointers
-    from iOS 12 are tagged. More information can be found here:
+def untag_pointer(tagged_pointer):
+    """Returns the untagged pointer.
+
+    On iOS 12 the first 16 bits(MSB) of a pointer are used to store extra
+    information. We say that the pointers from iOS 12 are tagged.
+    The pointers should have the 2 first bytes 0xffff, the next digits should
+    be fff0 and the pointed-to values should be multiple of 4.
+    More information can be found here:
     https://bazad.github.io/2018/06/ios-12-kernelcache-tagged-pointers/
+
+    Args:
+        tagged_pointer: a pointer with the first 16 bits used to store extra
+                        information.
+
+    Returns:
+        A pointer with the 'tag' removed and starting with 0xffff
+        (the traditional way).
     """
 
-    return (p & ((1 << 48) - 1)) | (0xffff << 48)
+    return tagged_pointer & (0xffff << 48)
 
 
 def get_cstring_section(binary: lief.MachO.Binary):
@@ -83,7 +122,7 @@ def get_cstring_section(binary: lief.MachO.Binary):
     seg = binary.get_segment('__TEXT')
     if seg:
         sects = [s for s in seg.sections if s.name == CSTRING_SECTION]
-        assert (len(sects) == 1)
+        assert len(sects) == 1
         return sects[0]
     return binary.get_section(CSTRING_SECTION)
 
@@ -109,7 +148,7 @@ def get_xref(binary: lief.MachO.Binary, vaddr: int):
 
     r = []
     word_size = binary_get_word_size(binary)
-    i = 0
+
     for sect in binary.sections:
         content = sect.content[:len(sect.content) - len(sect.content) % word_size]
         content = [unpack(content[i:i + word_size])
@@ -161,8 +200,8 @@ def is_vaddr_in_section(vaddr, section):
     """Checks if given virtual address is inside given section. Returns true
     if the preveious condition is satisfied and false otherwise.
     """
-    return vaddr >= section.virtual_address \
-           and vaddr < section.virtual_address + section.size
+
+    return section.virtual_address <= vaddr < section.virtual_address + section.size
 
 
 def extract_data_tables_from_section(binary, to_data, section):
@@ -183,7 +222,7 @@ def extract_data_tables_from_section(binary, to_data, section):
         if addr_size == 8:
             ptr = untag_pointer(ptr)
         data = to_data(binary, ptr)
-        if data == None:
+        if data is None:
             vaddr += addr_size
             continue
         table = [data]
@@ -194,7 +233,7 @@ def extract_data_tables_from_section(binary, to_data, section):
             if addr_size == 8:
                 ptr = untag_pointer(ptr)
             data = to_data(binary, ptr)
-            if data == None:
+            if data is None:
                 break
             table.append(data)
             vaddr += addr_size
@@ -243,7 +282,7 @@ def extract_separated_profiles(binary, string_tables):
             return r[0]
 
         profile_names_v = [transform(v) for v in string_tables]
-        profile_names_v = [v for v in profile_names_v if v != None]
+        profile_names_v = [v for v in profile_names_v if v is not None]
         profile_names_v = [x for v in profile_names_v for x in v]
         return get_sol(profile_names_v)
 
@@ -280,7 +319,7 @@ def extract_separated_profiles(binary, string_tables):
     return zip(profile_names, profile_contents)
 
 
-def extract_sbops(binary, string_tables):
+def extract_sbops(string_tables):
     """ Extracts sandbox operations from a given MachO binary which has the
     string tables provided in the string_tables param.
     """
@@ -312,7 +351,7 @@ def extract_sbops(binary, string_tables):
         return sol
 
     sbops_v = [transform(v) for v in string_tables]
-    sbops_v = [v for v in sbops_v if v != None and v != []]
+    sbops_v = [v for v in sbops_v if v is not None and v != []]
     sbops_v = [x for v in sbops_v for x in v]
     return get_sol(sbops_v)
 
@@ -394,7 +433,8 @@ def check_bundle(data: bytes, base_index: int, ios_version: int):
         debug_table_count = struct.unpack('<B', data[base_index + 11:base_index + 12])[0]
 
         # base_index will be now at the of op_nodes
-        base_index += 12 + (count + global_table_count + debug_table_count) * 2 \
+        base_index += 12 + (
+                count + global_table_count + debug_table_count) * 2 \
                       + (2 + sb_ops_count) * 2 * sb_profiles_count \
                       + op_nodes_count * 8 + 4
 
@@ -445,8 +485,8 @@ def main(args):
     retcode = 0
     string_tables = extract_string_tables(binary)
 
-    if args.sbops_file != None:
-        sbops = extract_sbops(binary, string_tables)
+    if args.sbops_file is not None:
+        sbops = extract_sbops(string_tables)
         sbops_str = '\n'.join(sbops)
         if args.sbops_file == '-':
             print(sbops_str)
@@ -458,7 +498,7 @@ def main(args):
                 retcode = e.errno
                 print(e, file=sys.stderr)
 
-    if args.sbs_dir != None:
+    if args.sbs_dir is not None:
         if args.version <= 8:
             profiles = extract_separated_profiles(binary, string_tables)
             for name, content in profiles:
