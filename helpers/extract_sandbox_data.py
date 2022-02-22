@@ -29,7 +29,7 @@ def unpack(bytes_list):
 
 def binary_get_string_from_address(binary: lief.MachO.Binary, vaddr: int):
     """Returns the string from a given MachO binary at a given virtual address.
-        The virtual address must be in the cstring section
+        The virtual address must be in the cstring section.
     """
 
     section = get_cstring_section(binary)
