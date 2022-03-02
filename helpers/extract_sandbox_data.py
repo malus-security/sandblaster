@@ -68,7 +68,7 @@ def binary_get_string_from_address(binary: lief.MachO.Binary, vaddr: int):
              0x{:x}", address);
     """
 
-    section = get_cstring_section(binary)
+    section = get_section_from_segment(binary, "__TEXT", CSTRING_SECTION)
     if not is_vaddr_in_section(vaddr, section):
         return None
 
@@ -114,31 +114,38 @@ def untag_pointer(tagged_pointer):
     return tagged_pointer & (0xffff << 48)
 
 
-def get_cstring_section(binary: lief.MachO.Binary):
-    """Returns the section which stores constant strings from a given MachO
-    binary.
+def get_section_from_segment(binary: lief.MachO.FatBinary,
+                             segment_name: str, section_name: str):
+    """This can be used for retrieving const, cstring and data sections.
+    Const section contains two tables: one with the names of the sandbox
+    profile and one with the content of the sandbox profile.
+    This section is in the __DATA segment.
 
+    Constant string section (cstring) contains the names of the profiles.
+    This section is in the __TEXT segment.
+
+    Data section contains the structures describing the content of the
+    profiles and the content itself.
+    This section is in the __DATA segment.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+        segment_name: The segment name (can be __DATA or __TEXT).
+        section_name: The section name (can be CSTRING_SECTION, CONST_SECTION,
+                      DATA_SECTION, all of them are macros)
+
+    Returns:
+        A binary section with the name given.
     """
 
-    seg = binary.get_segment('__TEXT')
+    seg = binary.get_segment(segment_name)
+
     if seg:
-        sects = [s for s in seg.sections if s.name == CSTRING_SECTION]
+        sects = [s for s in seg.sections if s.name == section_name]
         assert len(sects) == 1
         return sects[0]
-    return binary.get_section(CSTRING_SECTION)
 
-
-def get_section(binary: lief.MachO.FatBinary,
-                segment_name: str, section_name: str):
-    """Returns the section whose name is section_name and is located inside
-    the segment whose name is segment_name from the given MachO bianry.
-    """
-    seg = binary.get_segment(segment_name)
-    if not seg:
-        return None
-    sects = [s for s in seg.sections if s.name == section_name]
-    assert len(sects) <= 1
-    return sects[0] if len(sects) > 0 else None
+    return None
 
 
 def get_xref(binary: lief.MachO.Binary, vaddr: int):
@@ -166,7 +173,7 @@ def get_tables_section(binary: lief.MachO.Binary):
     the sandbox binary profiles for older versions of iOS.
     """
 
-    str_sect = get_cstring_section(binary)
+    str_sect = get_section_from_segment(binary, "__TEXT", CSTRING_SECTION)
     strs = str_sect.search_all('default\x00')
     if len(strs) > 0:
         vaddr_str = str_sect.virtual_address + strs[0]
