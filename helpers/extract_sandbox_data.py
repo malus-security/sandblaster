@@ -435,7 +435,6 @@ def extract_sbops(string_tables):
                 if not all(v == vals[0] for v in vals):
                     break
                 sol.append(vals[0])
-
         else:
             sol.append(possible[0][0])
             for c in possible[0][1:]:
@@ -465,45 +464,99 @@ def get_ios_major_version(version: str):
     return int(version.split('.')[0])
 
 
-def findall(searchin, pattern):
-    """Returns the indexes of all substrings equal to pattern inside
-    searchin string.
+def findall(searching, pattern):
+    """Finds all the substring in the given string.
+
+    Args:
+        searching: A string.
+        pattern: A pattern that needs to be searched in the searching string.
+
+    Returns:
+        The indexes of all substrings equal to pattern inside searching string.
     """
 
-    i = searchin.find(pattern)
+    i = searching.find(pattern)
     while i != -1:
         yield i
-        i = searchin.find(pattern, i + 1)
+        i = searching.find(pattern, i + 1)
 
 
 def check_regex(data: bytes, base_index: int, ios_version: int):
-    """ Checks if the regular expression(from sandbox profile) at offset
+    """ Checks if the regular expression (from sandbox profile) at offset
     base_index from data is valid for newer versions of iOS(>=8).
+
+    Args:
+        data: An array of bytes.
+        base_index: The starting index.
+        ios_version: An integer representing the iOS version.
+
+    Returns:
+        True: if the regular expression is valid for iOS version >= 8.
+        False: otherwise.
     """
 
     if base_index + 0x10 > len(data):
         return False
+
     if ios_version >= 13:
         size = struct.unpack('<H', data[base_index: base_index + 0x2])[0]
         version = struct.unpack('>I', data[base_index + 0x2: base_index + 0x6])[0]
     else:
         size = struct.unpack('<I', data[base_index: base_index + 0x4])[0]
         version = struct.unpack('>I', data[base_index + 0x4: base_index + 0x8])[0]
+
     if size > 0x1000 or size < 0x8 or base_index + size + 4 > len(data):
         return False
+
     if version != 3:
         return False
+
     if ios_version >= 13:
-        subsize = struct.unpack('<H', data[base_index + 0x6: base_index + 0x8])[0]
+        sub_size = struct.unpack('<H', data[base_index + 0x6: base_index + 0x8])[0]
     else:
-        subsize = struct.unpack('<H', data[base_index + 0x8: base_index + 0xa])[0]
-    return size == subsize + 6
+        sub_size = struct.unpack('<H', data[base_index + 0x8: base_index + 0xa])[0]
+
+    return size == sub_size + 6
+
+
+def unpack_for_newer_ios(base_index, count, data):
+    """Unpacking for newer iOS versions (>= 13).
+
+    Args:
+        base_index: The starting index.
+        count: Bundle size.
+        data: An array of bytes.
+    Returns:
+        The new base index and an offset.
+    """
+    re_offset = base_index + 12
+    op_nodes_count = struct.unpack('<H', data[base_index + 2:base_index + 4])[0]
+    sb_ops_count = struct.unpack('<H', data[base_index + 4:base_index + 6])[0]
+    sb_profiles_count = struct.unpack('<H', data[base_index + 6:base_index + 8])[0]
+    global_table_count = struct.unpack('<B', data[base_index + 10:base_index + 11])[0]
+    debug_table_count = struct.unpack('<B', data[base_index + 11:base_index + 12])[0]
+    # base_index will be now at the of op_nodes
+    base_index += 12 + (
+            count + global_table_count + debug_table_count) * 2 \
+                  + (2 + sb_ops_count) * 2 * sb_profiles_count \
+                  + op_nodes_count * 8 + 4
+
+    return base_index, re_offset
 
 
 def check_bundle(data: bytes, base_index: int, ios_version: int):
-    """ Checks if the sandbox profile bundle at offset base_index from data
+    """Checks if the sandbox profile bundle at offset base_index from data
     is valid for the given ios_version. Note that sandbox profile bundles are
     used for newer versions of iOS(>=8).
+
+    Args:
+        data: An array of bytes.
+        base_index: The starting index.
+        ios_version: An integer representing the iOS version.
+
+    Returns:
+        True: if the sandbox profile bundle is valid.
+        False: otherwise.
     """
 
     if len(data) - base_index < 50:
@@ -526,19 +579,7 @@ def check_bundle(data: bytes, base_index: int, ios_version: int):
         return False
 
     if ios_version >= 13:
-        re_offset = base_index + 12
-
-        op_nodes_count = struct.unpack('<H', data[base_index + 2:base_index + 4])[0]
-        sb_ops_count = struct.unpack('<H', data[base_index + 4:base_index + 6])[0]
-        sb_profiles_count = struct.unpack('<H', data[base_index + 6:base_index + 8])[0]
-        global_table_count = struct.unpack('<B', data[base_index + 10:base_index + 11])[0]
-        debug_table_count = struct.unpack('<B', data[base_index + 11:base_index + 12])[0]
-
-        # base_index will be now at the of op_nodes
-        base_index += 12 + (
-                count + global_table_count + debug_table_count) * 2 \
-                      + (2 + sb_ops_count) * 2 * sb_profiles_count \
-                      + op_nodes_count * 8 + 4
+        base_index, re_offset = unpack_for_newer_ios(base_index, count, data)
 
     else:
         re_offset = base_index + re_offset * 8
