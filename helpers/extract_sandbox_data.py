@@ -246,7 +246,7 @@ def unpack_pointer(addr_size, binary, vaddr):
     return ptr
 
 
-def extract_data_tables_from_section(binary, to_data, section):
+def extract_data_tables_from_section(binary: lief.MachO.Binary, to_data, section):
     """ Generic implementation of table search. A table is formed of adjacent
     pointers to data.
 
@@ -314,31 +314,42 @@ def extract_separated_profiles(binary, string_tables):
     """Extract separated profiles from given MachO binary. It requires all
     string tables. This function is intended to be used for older version
     of iOS(<=7) because in newer versions the sandbox profiles are bundled.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+        string_tables: The extracted string tables.
+
+    Returns:
+        A zip object with profiles.
     """
 
     def get_profile_names():
-        """Returns the names of the sandbox profiles.
+        """Extracts the profile names.
+
+            Returns:
+                A list with the names of the sandbox profiles.
         """
 
         def transform(v):
             if len(v) <= 3:
                 return None
-            r = []
+
+            ans = []
             tmp = []
             for val in v:
                 if val in ['default', '0123456789abcdef']:
-                    r.append(tmp)
+                    ans.append(tmp)
                     tmp = []
                 else:
                     tmp.append(val)
-            r.append(tmp)
-            return r
+            ans.append(tmp)
+            return ans
 
         def get_sol(posible):
-            r = [v for v in posible
-                 if 'com.apple.sandboxd' in v]
-            assert (len(r) == 1)
-            return r[0]
+            ans = [v for v in posible
+                   if 'com.apple.sandboxd' in v]
+            assert (len(ans) == 1)
+            return ans[0]
 
         profile_names_v = [transform(v) for v in string_tables]
         profile_names_v = [v for v in profile_names_v if v is not None]
@@ -346,77 +357,109 @@ def extract_separated_profiles(binary, string_tables):
         return get_sol(profile_names_v)
 
     def get_profile_contents():
-        """Returns the contents of the sandbox profiles.
+        """Extracts the profile names.
+
+            Returns:
+                 The contents of the sandbox profiles.
         """
 
         def get_profile_content(binary, vaddr):
             addr_size = binary_get_word_size(binary)
             section = get_section_from_segment(binary, "__DATA", DATA_SECTION)
+
             if not is_vaddr_in_section(vaddr, section):
                 return None
+
             data = binary.get_content_from_virtual_address(vaddr, 2 * addr_size)
             if len(data) != 2 * addr_size:
                 return None
+
             data_vaddr = unpack(data[:addr_size])
             size = unpack(data[addr_size:])
             if not is_vaddr_in_section(vaddr, section):
                 return None
+
             data = binary.get_content_from_virtual_address(data_vaddr, size)
             if len(data) != size:
                 return None
             return bytes(data)
 
-        contents_v = [v for v in extract_data_tables_from_section(binary,
-                                                                  get_profile_content, get_tables_section(binary)) if
-                      len(v) > 3]
+        contents_v = [v for v in
+                      extract_data_tables_from_section(binary,
+                                                       get_profile_content,
+                                                       get_tables_section(binary))
+                      if len(v) > 3]
+
         assert (len(contents_v) == 1)
         return contents_v[0]
 
     profile_names = get_profile_names()
     profile_contents = get_profile_contents()
+
     assert (len(profile_names) == len(profile_contents))
     return zip(profile_names, profile_contents)
 
 
 def extract_sbops(string_tables):
-    """ Extracts sandbox operations from a given MachO binary which has the
-    string tables provided in the string_tables param.
+    """ Extracts sandbox operations from a given MachO binary.
+    If the sandbox profiles are stored either in sandboxd or sandbox kernel
+    extension, the operations are stored always in the kernel extension.
+    The sandbox operations are stored similar to the separated sandbox profiles
+    but this time we have only one table: the name table.
+
+    Args:
+        string_tables: The binary's string tables.
+
+    Returns:
+        The sandbox operations.
     """
 
     def transform(v):
         if len(v) <= 3:
             return None
+
         idxs = []
         for idx, val in enumerate(v):
             if val == 'default':
                 idxs.append(idx)
+
         return [v[idx:] for idx in idxs]
 
-    def get_sol(posible):
-        assert (len(posible) >= 1)
+    def get_sol(possible):
+        assert (len(possible) >= 1)
+
         sol = []
-        if len(posible) > 1:
-            cnt = min(len(v) for v in posible)
-            for vals in zip(*[v[:cnt] for v in posible]):
+        if len(possible) > 1:
+            cnt = min(len(v) for v in possible)
+            for vals in zip(*[v[:cnt] for v in possible]):
                 if not all(v == vals[0] for v in vals):
                     break
                 sol.append(vals[0])
+
         else:
-            sol.append(posible[0][0])
-            for c in posible[0][1:]:
+            sol.append(possible[0][0])
+            for c in possible[0][1:]:
                 if c in ['HOME', 'default']:
                     break
                 sol.append(c)
+
         return sol
 
     sbops_v = [transform(v) for v in string_tables]
     sbops_v = [v for v in sbops_v if v is not None and v != []]
     sbops_v = [x for v in sbops_v for x in v]
+
     return get_sol(sbops_v)
 
 
 def get_ios_major_version(version: str):
-    """Returns the major iOS version from a given version
+    """Extracts the major iOS version from a given version.
+
+        Args:
+            version: A string with the 'full' version.
+        Returns:
+            An integer with the major iOS version.
+
     """
 
     return int(version.split('.')[0])
