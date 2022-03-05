@@ -58,7 +58,7 @@ def binary_get_string_from_address(binary: lief.MachO.Binary, vaddr: int):
 
         Args:
             binary: A sandbox profile in its binary form.
-            vaddr: An address represented as an integer.
+            vaddr: An address.
 
         Returns:
             A string with the content stored at the given virtual address.
@@ -151,117 +151,168 @@ def get_section_from_segment(binary: lief.MachO.FatBinary,
 def get_xref(binary: lief.MachO.Binary, vaddr: int):
     """Custom cross reference implementation which supports tagged pointers
     from iOS 12. Searches for pointers in the given MachO binary to the given
-    virtual address. Returns a list of all such pointers.
+    virtual address.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+        vaddr: An address.
+
+    Returns:
+        A list with all the pointers to the given virtual address.
     """
 
-    r = []
+    ans = []
     word_size = binary_get_word_size(binary)
 
     for sect in binary.sections:
         content = sect.content[:len(sect.content) - len(sect.content) % word_size]
         content = [unpack(content[i:i + word_size])
                    for i in range(0, len(content), word_size)]
+
         if word_size == 8:
             content = [untag_pointer(p) for p in content]
-        r.extend((sect.virtual_address + i * word_size
-                  for i, p in enumerate(content) if p == vaddr))
-    return r
+
+        ans.extend((sect.virtual_address + i * word_size
+                    for i, p in enumerate(content) if p == vaddr))
+
+    return ans
 
 
 def get_tables_section(binary: lief.MachO.Binary):
     """Searches for the section containing the sandbox operations table and
     the sandbox binary profiles for older versions of iOS.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+
+    Returns:
+        A binary section.
     """
 
     str_sect = get_section_from_segment(binary, "__TEXT", CSTRING_SECTION)
     strs = str_sect.search_all('default\x00')
+
     if len(strs) > 0:
         vaddr_str = str_sect.virtual_address + strs[0]
         xref_vaddrs = get_xref(binary, vaddr_str)
+
         if len(xref_vaddrs) > 0:
             sects = [binary.section_from_virtual_address(x) for x in xref_vaddrs]
             sects = [s for s in sects if 'const' in s.name.lower()]
             assert len(sects) >= 1 and all([sects[0] == s for s in sects])
             return sects[0]
+
     seg = binary.get_segment('__DATA')
     if seg:
         sects = [s for s in seg.sections if s.name == CONST_SECTION]
         assert (len(sects) <= 1)
+
         if len(sects) == 1:
             return sects[0]
+
     return binary.get_section(CONST_SECTION)
 
 
-def get_data_section(binary: lief.MachO.Binary):
-    """Returns the data section from the given MachO binary
-    """
-
-    seg = binary.get_segment('__DATA')
-    if seg:
-        sects = [s for s in seg.sections if s.name == DATA_SECTION]
-        assert (len(sects) == 1)
-        return sects[0]
-    return binary.get_section(DATA_SECTION)
-
-
 def is_vaddr_in_section(vaddr, section):
-    """Checks if given virtual address is inside given section. Returns true
-    if the preveious condition is satisfied and false otherwise.
+    """Checks if given virtual address is inside given section. 
+    
+    Args:
+        vaddr: A virtual address.
+        section: A section of the binary.
+
+    Returns:
+        True: if the address is inside the section
+        False: Otherwise
     """
 
     return section.virtual_address <= vaddr < section.virtual_address + section.size
 
 
+def unpack_pointer(addr_size, binary, vaddr):
+    """Unpacks a pointer and untags it if it is necessary.
+    Args:
+        binary: A sandbox profile in its binary form.
+        vaddr: A virtual address.
+        addr_size: The size of an address (4 or 8).
+
+    Returns:
+        A pointer.
+    """
+
+    ptr = unpack(
+        binary.get_content_from_virtual_address(vaddr, addr_size))
+    if addr_size == 8:
+        ptr = untag_pointer(ptr)
+    return ptr
+
+
 def extract_data_tables_from_section(binary, to_data, section):
     """ Generic implementation of table search. A table is formed of adjacent
-    pointers to data. In order to check if the data is valid the provided
-    to_data function is used. This function should return None for invalid data
-    and anything else otherwise. This function searches for tables just in the
-    given section. It returns an array of tables(arrays of data).
+    pointers to data.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+        to_data: Function that checks if the data is valid. This function
+                 returns None for invalid data and anything else otherwise.
+        section: A section of the binary.
+
+    Returns:
+            An array of tables (arrays of data).
     """
+
     addr_size = binary_get_word_size(binary)
-    startaddr = section.virtual_address
-    endaddr = section.virtual_address + section.size
+    start_addr = section.virtual_address
+    end_addr = section.virtual_address + section.size
     tables = []
-    vaddr = startaddr
-    while vaddr <= endaddr - addr_size:
-        ptr = unpack(
-            binary.get_content_from_virtual_address(vaddr, addr_size))
-        if addr_size == 8:
-            ptr = untag_pointer(ptr)
+    vaddr = start_addr
+
+    while vaddr <= end_addr - addr_size:
+        ptr = unpack_pointer(addr_size, binary, vaddr)
+
         data = to_data(binary, ptr)
         if data is None:
             vaddr += addr_size
             continue
+
         table = [data]
         vaddr += addr_size
-        while vaddr <= endaddr - addr_size:
-            ptr = unpack(
-                binary.get_content_from_virtual_address(vaddr, addr_size))
-            if addr_size == 8:
-                ptr = untag_pointer(ptr)
+
+        while vaddr <= end_addr - addr_size:
+            ptr = unpack_pointer(addr_size, binary, vaddr)
+
             data = to_data(binary, ptr)
             if data is None:
                 break
+
             table.append(data)
             vaddr += addr_size
+
         if table not in tables:
             tables.append(table)
+
         vaddr += addr_size
+
     return tables
 
 
 def extract_string_tables(binary: lief.MachO.Binary):
     """Extracts string tables from the given MachO binary.
+
+    Args:
+        binary: A sandbox profile in its binary form.
+
+    Returns:
+        The string tables.
     """
 
     return extract_data_tables_from_section(binary,
-                                            binary_get_string_from_address, get_tables_section(binary))
+                                            binary_get_string_from_address,
+                                            get_tables_section(binary))
 
 
 def extract_separated_profiles(binary, string_tables):
-    """Extract separated profiles from given MachO bianry. It requires all
-    string tables. This function is intented to be used for older version
+    """Extract separated profiles from given MachO binary. It requires all
+    string tables. This function is intended to be used for older version
     of iOS(<=7) because in newer versions the sandbox profiles are bundled.
     """
 
@@ -300,7 +351,7 @@ def extract_separated_profiles(binary, string_tables):
 
         def get_profile_content(binary, vaddr):
             addr_size = binary_get_word_size(binary)
-            section = get_data_section(binary)
+            section = get_section_from_segment(binary, "__DATA", DATA_SECTION)
             if not is_vaddr_in_section(vaddr, section):
                 return None
             data = binary.get_content_from_virtual_address(vaddr, 2 * addr_size)
