@@ -83,3 +83,8 @@ The actual reverser is part of the `reverse-sandbox/` folder. Files here can be 
 ## Supported iOS Versions
 
 SandBlaster works for iOS version 4 onwards including iOS 12. Apple has been making updates to the binary format of the sandbox profiles: since iOS 9 sandbox profiles are stored in a bundle, since iOS 10 strings are aggregated together in a specialied binary format. iOS 11 didn't bring any change to the format.
+
+## Community
+
+Join us on [Discord](https://discord.gg/m3gjuyHYw9) for live discussions.
+>>>>>>> 332ddbfb1c82f768b99ce79d78175c0800f57d9b
