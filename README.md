@@ -10,6 +10,8 @@ The reverser (in the `reverse-sandbox/` folder) and the helper tool (in the `hel
 
 SandBlaster may be installed and run standalone, though we recommend installing and running it from within [iExtractor](https://github.com/malus-security/iExtractor). Check the [iExtractor documentation](https://github.com/malus-security/iExtractor/blob/master/README.md) for information.
 
+iExtractor is open source software released under the 3-clause BSD license.
+
 ## Installation
 
 SandBlaster requires Python2 for the reverser (in `reverse-sandbox/`), Python3 with `lief` library for helper script (in `helpers/`).
@@ -80,4 +82,10 @@ The actual reverser is part of the `reverse-sandbox/` folder. Files here can be 
 
 ## Supported iOS Versions
 
-SandBlaster works for iOS version 4 onwards including iOS 12. Apple has been making updates to the binary format of the sandbox profiles: since iOS 9 sandbox profiles are stored in a bundle, since iOS 10 strings are aggregated together in a specialied binary format. iOS 11 didn't bring any change to the format.
+SandBlaster works for iOS version 7 onwards including iOS 11. Apple has been making updates to the binary format of the sandbox profiles: since iOS 9 sandbox profiles are stored in a bundle, since iOS 10 strings are aggregated together in a specialied binary format. iOS 11 didn't bring any change to the format.
+
+Earlier version of iOS (<= 6) use a different format that SandBlaster doesn't (yet) support. Contributions are welcome.
+
+## Community
+
+Join us on [Discord](https://discord.gg/m3gjuyHYw9) for live discussions.

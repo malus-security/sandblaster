@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 iOS/OS X sandbox decompiler
@@ -191,7 +191,7 @@ def display_sandbox_profiles(f, re_table_offset, num_sb_ops, ios_version):
         boundary = struct.unpack("<H", f.read(2))[0]
         name = extract_string_from_offset(f, name_offset, ios_version)
 
-        print name
+        print(name)
 
     logger.info("Found %d sandbox profiles." % num_profiles)
 
@@ -269,7 +269,7 @@ def main():
 
     if args.filename is None:
         parser.print_usage()
-        print "no sandbox profile/bundle file to reverse"
+        print("no sandbox profile/bundle file to reverse")
         sys.exit(1)
 
     # Read sandbox operations.
@@ -282,7 +282,7 @@ def main():
         for op in args.operation:
             if op not in sb_ops:
                 parser.print_usage()
-                print "unavailable operation: {}".format(op)
+                print("unavailable operation: {}".format(op))
                 sys.exit(1)
             ops_to_reverse.append(op)
 
@@ -340,7 +340,7 @@ def main():
         if header == 0x8000:
             display_sandbox_profiles(f, re_table_offset, num_sb_ops, get_ios_major_version(args.release))
         else:
-            print "cannot print sandbox profiles list; filename {} is not a sandbox bundle".format(args.filename)
+            print("cannot print sandbox profiles list; filename {} is not a sandbox bundle".format(args.filename))
         sys.exit(0)
 
     global_vars = None
