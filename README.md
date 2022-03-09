@@ -87,4 +87,3 @@ SandBlaster works for iOS version 4 onwards including iOS 12. Apple has been mak
 ## Community
 
 Join us on [Discord](https://discord.gg/m3gjuyHYw9) for live discussions.
->>>>>>> 332ddbfb1c82f768b99ce79d78175c0800f57d9b
