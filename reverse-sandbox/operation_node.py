@@ -302,8 +302,11 @@ class NonTerminalNode():
     def is_last_regular_expression(self):
         return self.filter_id == 0x81 and self.argument_id == num_regex-1
 
-    def convert_filter(self, convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars):
-        (self.filter, self.argument) = convert_fn(f, ios10_release, keep_builtin_filters, global_vars, regex_list, self.filter_id, self.argument_id)
+    def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
+            keep_builtin_filters, global_vars, base_addr):
+        (self.filter, self.argument) = convert_fn(f, ios_major_version,
+            keep_builtin_filters, global_vars, regex_list, self.filter_id,
+            self.argument_id, base_addr)
 
     def is_non_terminal_deny(self):
         if self.match.is_non_terminal() and self.unmatch.is_terminal():
@@ -358,11 +361,13 @@ class OperationNode():
     def is_non_terminal(self):
         return self.type == self.OPERATION_NODE_TYPE_NON_TERMINAL
 
-    def parse_terminal(self):
+    def parse_terminal(self, ios_major_version):
         self.terminal = TerminalNode()
         self.terminal.parent = self
-        self.terminal.type = self.raw[2] & 0x01
-        self.terminal.flags = self.raw[2] & 0xfe
+        self.terminal.type = \
+            self.raw[2 if ios_major_version <12 else 1] & 0x01
+        self.terminal.flags = \
+            self.raw[2 if ios_major_version <12 else 1] & 0xfe
 
     def parse_non_terminal(self):
         self.non_terminal = NonTerminalNode()
@@ -372,16 +377,18 @@ class OperationNode():
         self.non_terminal.match_offset = self.raw[4] + (self.raw[5] << 8)
         self.non_terminal.unmatch_offset = self.raw[6] + (self.raw[7] << 8)
 
-    def parse_raw(self):
+    def parse_raw(self, ios_major_version):
         self.type = self.raw[0]
         if self.is_terminal():
-            self.parse_terminal()
+            self.parse_terminal(ios_major_version)
         elif self.is_non_terminal():
             self.parse_non_terminal()
 
-    def convert_filter(self, convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars):
+    def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
+            keep_builtin_filters, global_vars, base_addr):
         if self.is_non_terminal():
-            self.non_terminal.convert_filter(convert_fn, f, regex_list, ios10_release, keep_builtin_filters, global_vars)
+            self.non_terminal.convert_filter(convert_fn, f, regex_list,
+                ios_major_version, keep_builtin_filters, global_vars, base_addr)
 
     def str_debug(self):
         ret = "(%02x) " % (int)(self.offset)
@@ -419,7 +426,7 @@ class OperationNode():
         return self.raw == other.raw
 
     def __hash__(self):
-        return (int)(self.offset)
+        return struct.unpack('<I', ''.join([chr(v) for v in self.raw[:4]]))[0]
 
 
 # Operation nodes processed so far.
@@ -428,25 +435,36 @@ processed_nodes = []
 # Number of regular expressions.
 num_regex = 0
 
+# Operation nodes offset.
+operations_offset = 0
+
 
 def has_been_processed(node):
     global processed_nodes
     return node in processed_nodes
 
 
-def build_operation_node(raw, offset):
-    node = OperationNode(offset / 8)
+def build_operation_node(raw, offset, ios_major_version):
+    global operations_offset
+    node = OperationNode((offset - operations_offset) / 8) # why offset / 8 ?
     node.raw = raw
-    node.parse_raw()
+    node.parse_raw(ios_major_version)
     return node
 
 
-def build_operation_nodes(f, num_operation_nodes):
+def build_operation_nodes(f, num_operation_nodes, ios_major_version):
+    global operations_offset
     operation_nodes = []
+
+    if ios_major_version <= 12:
+        operations_offset = 0
+    else:
+        operations_offset = f.tell()
     for i in range(num_operation_nodes):
         offset = f.tell()
         raw = struct.unpack("<8B", f.read(8))
-        operation_nodes.append(build_operation_node(raw, offset))
+        operation_nodes.append(build_operation_node(raw, offset,
+            ios_major_version))
 
     # Fill match and unmatch fields for each node in operation_nodes.
     for i in range(len(operation_nodes)):
@@ -499,6 +517,9 @@ def build_operation_node_graph(node, default_node):
     if node.is_terminal():
         return None
 
+    if default_node.is_non_terminal():
+        return None
+
     # If node is non-terminal and has already been processed, then it's a jump rule to a previous operation.
     if has_been_processed(node):
         return None
@@ -510,7 +531,8 @@ def build_operation_node_graph(node, default_node):
     while nodes_to_process:
         (parent_node, current_node) = nodes_to_process.pop()
         if not current_node in g.keys():
-            g[current_node] = {"list": set(), "decision": None, "type": set(["normal"]), "reduce": None, "not": False}
+            g[current_node] = {"list": set(), "decision": None,
+                "type": set(["normal"]), "reduce": None, "not": False}
         if not parent_node:
             g[current_node]["type"].add("start")
 
@@ -1694,17 +1716,18 @@ def reduce_operation_node_graph(g):
 
 
 def main():
-    if len(sys.argv) != 3:
-        print >> sys.stderr, "Usage: %s binary_sandbox_file operations_file" % (sys.argv[0])
+    if len(sys.argv) != 4:
+        print >> sys.stderr, "Usage: %s binary_sandbox_file operations_file ios_version" % (sys.argv[0])
         sys.exit(-1)
 
+    ios_major_version = int(sys.argv[3].split('.')[0])
     # Read sandbox operations.
     sb_ops = [l.strip() for l in open(sys.argv[2])]
     num_sb_ops = len(sb_ops)
     logger.info("num_sb_ops:", num_sb_ops)
 
     f = open(sys.argv[1], "rb")
-    operation_nodes = build_operation_nodes(f, num_sb_ops)
+    operation_nodes = build_operation_nodes(f, num_sb_ops, ios_major_version)
 
     global num_regex
     f.seek(4)
