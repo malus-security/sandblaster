@@ -467,13 +467,11 @@ def build_operation_nodes(f, num_operation_nodes, ios_major_version):
             ios_major_version))
 
     # Fill match and unmatch fields for each node in operation_nodes.
-    for i in range(len(operation_nodes)):
-        if operation_nodes[i].is_non_terminal():
-            for j in range(len(operation_nodes)):
-                if operation_nodes[i].non_terminal.match_offset == operation_nodes[j].offset:
-                    operation_nodes[i].non_terminal.match = operation_nodes[j]
-                if operation_nodes[i].non_terminal.unmatch_offset == operation_nodes[j].offset:
-                    operation_nodes[i].non_terminal.unmatch = operation_nodes[j]
+    offsets = {node.offset: node for node in operation_nodes}
+    for node in operation_nodes:
+        if node.is_non_terminal():
+            node.non_terminal.match = offsets[node.non_terminal.match_offset]
+            node.non_terminal.unmatch = offsets[node.non_terminal.unmatch_offset]
 
     return operation_nodes
 
