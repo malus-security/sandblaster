@@ -1,3 +1,14 @@
+import sys
+import struct
+import logging
+import logging.config
+import os
+
+dir_path = os.path.dirname(__file__) or "."
+logging.config.fileConfig(dir_path + "/logger.config")
+logger = logging.getLogger(__name__)
+
+
 class NonTerminalNode:
     """Intermediary node consisting of a filter to match
 
@@ -80,7 +91,7 @@ class NonTerminalNode:
 
         return result_list
 
-    def __prefix_adder(self, curr_filter, prefix_added, s):
+    def _prefix_adder(self, curr_filter, prefix_added, s):
         """
             Appends a prefix if it is needed.
 
@@ -100,7 +111,7 @@ class NonTerminalNode:
                 curr_filter += "-prefix"
         return curr_filter
 
-    def __cur_filter_identifier(self, curr_filter, s):
+    def _cur_filter_identifier(self, curr_filter, s):
         """
             Identifies the current filter and updates the string as following:
 
@@ -136,7 +147,7 @@ class NonTerminalNode:
             s = s.replace('\\.', '[.]')
         return curr_filter, s
 
-    def __identify_subpath(self, arg, curr_filter):
+    def _identify_subpath(self, arg, curr_filter):
         """
             Updates the argument and also the filter if it is needed.
 
@@ -160,15 +171,15 @@ class NonTerminalNode:
                 The updated argument and given filter.
         """
 
-        curr_filter, s = self.__cur_filter_identifier(curr_filter, arg)
+        curr_filter, s = self._cur_filter_identifier(curr_filter, arg)
 
         prefix_added = False
 
-        curr_filter = self.__prefix_adder(curr_filter, prefix_added, arg)
+        curr_filter = self._prefix_adder(curr_filter, prefix_added, arg)
 
         return arg, curr_filter
 
-    def __regex_adder(self, curr_filter, regex_added):
+    def regex_adder(self, curr_filter, regex_added):
         """
             It updates the current filter if it is needed.
 
@@ -183,14 +194,14 @@ class NonTerminalNode:
         """
 
         if not regex_added:
-            regex_added = True
+            regex_added = True  # useless to put it at True because we don't return it
             if self.filter == "literal":
                 curr_filter = "regex"
             else:
                 curr_filter += "-regex"
         return curr_filter
 
-    def __identify_subpath_and_filter(self, ret_str):
+    def _identify_subpath_and_filter(self, ret_str):
         """
             For a given string, it checks if the instance's filter is a literal
             or not. If it is a literal, then the current filter should be
@@ -205,13 +216,12 @@ class NonTerminalNode:
         for arg in self.argument:
             curr_filter = self.filter
             regex_added = False
-
             if len(arg) == 0:
                 arg = ".+"
-                curr_filter = self.__regex_adder(curr_filter, regex_added)
+                curr_filter = self.regex_adder(curr_filter, regex_added)
 
             else:
-                arg, curr_filter = self.__identify_subpath(arg, curr_filter)
+                arg, curr_filter = self._identify_subpath(arg, curr_filter)
 
             if "regex" in curr_filter:
                 ret_str += '(%04x, %04x) (%s #"%s")\n' % (self.match_offset,
@@ -220,12 +230,12 @@ class NonTerminalNode:
             else:
                 ret_str += '(%s "%s")\n' % (curr_filter, arg)
         if len(self.argument) == 1:
-            ret_str = ret_str[:-1]
+            ret_str = ret_str[:-1]  # supress the last character which is the "\n"
         else:
             ret_str = ret_str[:-1] + ")"
         return ret_str
 
-    def __single_argument_regex(self, arg, curr_filter):
+    def _single_argument_regex(self, arg, curr_filter):
         """
             For a single argument (not a list) updates the argument and filter.
 
@@ -250,7 +260,7 @@ class NonTerminalNode:
                 arg = arg.replace('\\.', '[.]')
         return arg, curr_filter
 
-    def __str_initializer(self):
+    def _str_initializer(self):
         """
             For a list it initializes the string.
 
@@ -282,23 +292,23 @@ class NonTerminalNode:
 
         if self.argument:
 
-            self.argument = self.simplify_list(self.argument)
+            self.argument = self.simplify_list(self.argument)  # so self.argument is necessarily a list ?
             if type(self.argument) is list:
-                ret_str = self.__str_initializer()
-                ret_str = self.__identify_subpath_and_filter(ret_str)
+                ret_str = self._str_initializer()
+                ret_str = self._identify_subpath_and_filter(ret_str)
                 return ret_str
 
             arg = self.argument
             curr_filter = self.filter
-            arg, curr_filter = self.__single_argument_regex(arg, curr_filter)
+            arg, curr_filter = self._single_argument_regex(arg, curr_filter)
             prefix_added = False
-            self.__prefix_adder(curr_filter, prefix_added, arg)
+            self._prefix_adder(curr_filter, prefix_added, arg)  # MUST return curr_filter ?!
 
             return "(%04x, %04x) (%s %s)" % (self.match_offset, self.unmatch_offset, curr_filter, arg)
         else:
             return "(%04x, %04x) (%s)" % (self.match_offset, self.unmatch_offset, self.filter)
 
-    def __filter_accumulator(self, s):
+    def _filter_accumulator(self, s):
         """
             Updates the string and calls all the filters identifiers.
 
@@ -314,35 +324,13 @@ class NonTerminalNode:
         prefix_added = False
         if len(s) == 0:
             s = ".+"
-            curr_filter = self.__regex_adder(curr_filter, regex_added)
+            curr_filter = self.regex_adder(curr_filter, regex_added)
         else:
-            curr_filter, s = self.__cur_filter_identifier(curr_filter, s)
-            curr_filter = self.__prefix_adder(curr_filter, prefix_added, s)
+            curr_filter, s = self._cur_filter_identifier(curr_filter, s)
+            curr_filter = self._prefix_adder(curr_filter, prefix_added, s)
         return curr_filter, s
 
-    def __not_regex(self, curr_filter, s):
-        """
-            Updates the string and the filter accordingly to the regex.
-
-            Args:
-                curr_filter: The current filter.
-                s: The string to be updated.
-
-            Returns:
-                The updated filter and the updated string.
-        """
-
-        if "regex" not in curr_filter:
-            if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
-                if self.filter == "literal":
-                    curr_filter = "regex"
-                else:
-                    curr_filter += "-regex"
-                s = s.replace('\\\\.', '[.]')
-                s = s.replace('\\.', '[.]')
-        return curr_filter, s
-
-    def __str__(self):
+    def _str__(self):
         """
             Returns the string representation of the node.
 
@@ -369,16 +357,16 @@ class NonTerminalNode:
         if type(self.argument) is not list:
             s = self.argument
             curr_filter = self.filter
-            curr_filter, s = self.__not_regex(curr_filter, s)
+            curr_filter, s = self._not_regex(curr_filter, s)
             prefix_added = False
-            self.__prefix_adder(curr_filter, prefix_added, s)
+            self._prefix_adder(curr_filter, prefix_added, s)
             return "(%s %s)" % (curr_filter, s)
 
         self.argument = self.simplify_list(self.argument)
-        ret_str = self.__str_initializer()
+        ret_str = self._str_initializer()
 
         for s in self.argument:
-            curr_filter, s = self.__filter_accumulator(s)
+            curr_filter, s = self._filter_accumulator(s)
             if "regex" in curr_filter:
                 ret_str += '(%s #"%s")\n' % (curr_filter, s)
             else:
@@ -407,17 +395,17 @@ class NonTerminalNode:
         if not self.argument:
             return "(%s)" % self.filter
 
-        if type(self.argument) is not list:
+        if type(self.argument) is list:
             if len(self.argument) == 1:
                 ret_str = ""
             else:
-                self.argument = self.simplify_list(self.argument)
-                if len(self.argument) == 1:
+                self.argument = self.simplify_list(self.argument)  # if it is not a list so simplify_list is useless
+                if len(self.argument) == 1:  # we need a list here
                     ret_str = ""
                 else:
                     ret_str = "(require-all "
 
-            for s in self.argument:
+            for s in self.argument:  # so it must be list
                 curr_filter, s = self.__filter_accumulator(s)
                 if "regex" in curr_filter:
                     ret_str += '(require-not (%s #"%s"))\n' % \
@@ -430,6 +418,43 @@ class NonTerminalNode:
                 ret_str = ret_str[:-1] + ")"
             return ret_str
 
+    def cor_str_not(self):
+        """
+            Attempt of correction of the function 'str_not(self)'
+
+        """
+        if not self.filter:
+            return "(%02x %04x %04x %04x)" % (self.filter_id,
+                                              self.argument_id,
+                                              self.match_offset,
+                                              self.unmatch_offset)
+
+        if not self.argument:
+            return "(%s)" % self.filter
+
+        ret_str = ""
+        if type(self.argument) is not list:
+            if len(self.argument) == 1:
+                ret_str = ""
+            return ret_str
+        else:
+            self.argument = self.simplify_list(self.argument)
+            if len(self.argument) == 1:
+                ret_str = ""
+            else:
+                ret_str = "(require-all "
+            for s in self.argument:
+                curr_filter, s = self._filter_accumulator(s)
+                if "regex" in curr_filter:
+                    ret_str += '(require-not (%s #"%s"))\n' % \
+                               (curr_filter, s)
+                else:
+                    ret_str += '(require-not (%s "%s"))\n' % (curr_filter, s)
+            if len(self.argument) == 1:
+                ret_str = ret_str[:-1]
+            else:
+                ret_str = ret_str[:-1] + ")"
+            return ret_str
 
     def values(self):
         if self.filter:
@@ -443,7 +468,7 @@ class NonTerminalNode:
         return self.filter_id == 0x1e or self.filter_id == 0x1f or self.filter_id == 0x20 or self.filter_id == 0xa0
 
     def is_last_regular_expression(self):
-        return self.filter_id == 0x81 and self.argument_id == num_regex - 1
+        return self.filter_id == 0x81 and self.argument_id == num_regex - 1  # num_regex is not defined
 
     def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
                        keep_builtin_filters, global_vars, base_addr):
