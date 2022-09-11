@@ -9,7 +9,8 @@ import logging.config
 logging.config.fileConfig("logger.config")
 logger = logging.getLogger(__name__)
 
-class TerminalNode():
+
+class TerminalNode:
     """Allow or Deny end node in binary sandbox format
 
     A terminal node, when reached, either denies or allows the rule.
@@ -40,7 +41,7 @@ class TerminalNode():
         return self.type == self.TERMINAL_NODE_TYPE_DENY
 
 
-class NonTerminalNode():
+class NonTerminalNode:
     """Intermediary node consisting of a filter to match
 
     The non-terminal node, when matched, points to a new node, and
@@ -60,7 +61,12 @@ class NonTerminalNode():
     unmatch = None
 
     def __eq__(self, other):
-        return self.filter_id == other.filter_id and self.argument_id == other.argument_id and self.match_offset == other.match_offset and self.unmatch_offset == other.unmatch_offset
+        return (
+            self.filter_id == other.filter_id
+            and self.argument_id == other.argument_id
+            and self.match_offset == other.match_offset
+            and self.unmatch_offset == other.unmatch_offset
+        )
 
     def simplify_list(self, arg_list):
         result_list = []
@@ -72,10 +78,10 @@ class NonTerminalNode():
             for r in tmp_list:
                 if len(r) == 0:
                     continue
-                if a == r or a+"/" == r or a == r+"/":
+                if a == r or a + "/" == r or a == r + "/":
                     match_found = True
                     result_list.remove(r)
-                    if a[-1] == '/':
+                    if a[-1] == "/":
                         result_list.append(a + "^^^")
                     else:
                         result_list.append(a + "/^^^")
@@ -112,21 +118,31 @@ class NonTerminalNode():
                             if s[-4:] == "/^^^":
                                 curr_filter = "subpath"
                                 s = s[:-4]
-                            if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
+                            if (
+                                "\\" in s
+                                or "|" in s
+                                or ("[" in s and "]" in s)
+                                or "+" in s
+                            ):
                                 if curr_filter == "subpath":
                                     s = s + "/?"
                                 if self.filter == "literal":
                                     curr_filter = "regex"
                                 else:
                                     curr_filter += "-regex"
-                                s = s.replace('\\\\.', '[.]')
-                                s = s.replace('\\.', '[.]')
+                                s = s.replace("\\\\.", "[.]")
+                                s = s.replace("\\.", "[.]")
                             if "${" in s and "}" in s:
                                 if not prefix_added:
                                     prefix_added = True
                                     curr_filter += "-prefix"
                         if "regex" in curr_filter:
-                            ret_str += '(%04x, %04x) (%s #"%s")\n' % (self.match_offset, self.unmatch_offset, curr_filter, s)
+                            ret_str += '(%04x, %04x) (%s #"%s")\n' % (
+                                self.match_offset,
+                                self.unmatch_offset,
+                                curr_filter,
+                                s,
+                            )
                         else:
                             ret_str += '(%s "%s")\n' % (curr_filter, s)
                     if len(self.argument) == 1:
@@ -137,20 +153,34 @@ class NonTerminalNode():
                 s = self.argument
                 curr_filter = self.filter
                 if not "regex" in curr_filter:
-                    if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
+                    if "\\" in s or "|" in s or ("[" in s and "]" in s) or "+" in s:
                         if self.filter == "literal":
                             curr_filter = "regex"
                         else:
                             curr_filter += "-regex"
-                        s = s.replace('\\\\.', '[.]')
-                        s = s.replace('\\.', '[.]')
+                        s = s.replace("\\\\.", "[.]")
+                        s = s.replace("\\.", "[.]")
                 if "${" in s and "}" in s:
                     if not "prefix" in curr_filter:
                         curr_filter += "-prefix"
-                return "(%04x, %04x) (%s %s)" % (self.match_offset, self.unmatch_offset, curr_filter, s)
+                return "(%04x, %04x) (%s %s)" % (
+                    self.match_offset,
+                    self.unmatch_offset,
+                    curr_filter,
+                    s,
+                )
             else:
-                return "(%04x, %04x) (%s)" % (self.match_offset, self.unmatch_offset, self.filter)
-        return "(%02x %04x %04x %04x)" % (self.filter_id, self.argument_id, self.match_offset, self.unmatch_offset)
+                return "(%04x, %04x) (%s)" % (
+                    self.match_offset,
+                    self.unmatch_offset,
+                    self.filter,
+                )
+        return "(%02x %04x %04x %04x)" % (
+            self.filter_id,
+            self.argument_id,
+            self.match_offset,
+            self.unmatch_offset,
+        )
 
     def __str__(self):
         if self.filter:
@@ -180,15 +210,20 @@ class NonTerminalNode():
                             if s[-4:] == "/^^^":
                                 curr_filter = "subpath"
                                 s = s[:-4]
-                            if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
+                            if (
+                                "\\" in s
+                                or "|" in s
+                                or ("[" in s and "]" in s)
+                                or "+" in s
+                            ):
                                 if curr_filter == "subpath":
                                     s = s + "/?"
                                 if self.filter == "literal":
                                     curr_filter = "regex"
                                 else:
                                     curr_filter += "-regex"
-                                s = s.replace('\\\\.', '[.]')
-                                s = s.replace('\\.', '[.]')
+                                s = s.replace("\\\\.", "[.]")
+                                s = s.replace("\\.", "[.]")
                             if "${" in s and "}" in s:
                                 if not prefix_added:
                                     prefix_added = True
@@ -205,20 +240,25 @@ class NonTerminalNode():
                 s = self.argument
                 curr_filter = self.filter
                 if not "regex" in curr_filter:
-                    if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
+                    if "\\" in s or "|" in s or ("[" in s and "]" in s) or "+" in s:
                         if self.filter == "literal":
                             curr_filter = "regex"
                         else:
                             curr_filter += "-regex"
-                        s = s.replace('\\\\.', '[.]')
-                        s = s.replace('\\.', '[.]')
+                        s = s.replace("\\\\.", "[.]")
+                        s = s.replace("\\.", "[.]")
                 if "${" in s and "}" in s:
                     if not "prefix" in curr_filter:
                         curr_filter += "-prefix"
                 return "(%s %s)" % (curr_filter, s)
             else:
                 return "(%s)" % (self.filter)
-        return "(%02x %04x %04x %04x)" % (self.filter_id, self.argument_id, self.match_offset, self.unmatch_offset)
+        return "(%02x %04x %04x %04x)" % (
+            self.filter_id,
+            self.argument_id,
+            self.match_offset,
+            self.unmatch_offset,
+        )
 
     def str_not(self):
         if self.filter:
@@ -248,15 +288,20 @@ class NonTerminalNode():
                             if s[-4:] == "/^^^":
                                 curr_filter = "subpath"
                                 s = s[:-4]
-                            if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
+                            if (
+                                "\\" in s
+                                or "|" in s
+                                or ("[" in s and "]" in s)
+                                or "+" in s
+                            ):
                                 if curr_filter == "subpath":
                                     s = s + "/?"
                                 if self.filter == "literal":
                                     curr_filter = "regex"
                                 else:
                                     curr_filter += "-regex"
-                                s = s.replace('\\\\.', '[.]')
-                                s = s.replace('\\.', '[.]')
+                                s = s.replace("\\\\.", "[.]")
+                                s = s.replace("\\.", "[.]")
                             if "${" in s and "}" in s:
                                 if not prefix_added:
                                     prefix_added = True
@@ -273,20 +318,25 @@ class NonTerminalNode():
                 s = self.argument
                 curr_filter = self.filter
                 if not "regex" in curr_filter:
-                    if '\\' in s or '|' in s or ('[' in s and ']' in s) or '+' in s:
+                    if "\\" in s or "|" in s or ("[" in s and "]" in s) or "+" in s:
                         if self.filter == "literal":
                             curr_filter = "regex"
                         else:
                             curr_filter += "-regex"
-                        s = s.replace('\\\\.', '[.]')
-                        s = s.replace('\\.', '[.]')
+                        s = s.replace("\\\\.", "[.]")
+                        s = s.replace("\\.", "[.]")
                 if "${" in s and "}" in s:
                     if not "prefix" in curr_filter:
                         curr_filter += "-prefix"
                 return "(%s %s)" % (curr_filter, s)
             else:
                 return "(%s)" % (self.filter)
-        return "(%02x %04x %04x %04x)" % (self.filter_id, self.argument_id, self.match_offset, self.unmatch_offset)
+        return "(%02x %04x %04x %04x)" % (
+            self.filter_id,
+            self.argument_id,
+            self.match_offset,
+            self.unmatch_offset,
+        )
 
     def values(self):
         if self.filter:
@@ -294,19 +344,39 @@ class NonTerminalNode():
         return ("%02x" % self.filter_id, "%04x" % (self.argument_id))
 
     def is_entitlement_start(self):
-        return self.filter_id == 0x1e or self.filter_id == 0xa0
+        return self.filter_id == 0x1E or self.filter_id == 0xA0
 
     def is_entitlement(self):
-        return self.filter_id == 0x1e or self.filter_id == 0x1f or self.filter_id == 0x20 or self.filter_id == 0xa0
+        return (
+            self.filter_id == 0x1E
+            or self.filter_id == 0x1F
+            or self.filter_id == 0x20
+            or self.filter_id == 0xA0
+        )
 
     def is_last_regular_expression(self):
-        return self.filter_id == 0x81 and self.argument_id == num_regex-1
+        return self.filter_id == 0x81 and self.argument_id == num_regex - 1
 
-    def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
-            keep_builtin_filters, global_vars, base_addr):
-        (self.filter, self.argument) = convert_fn(f, ios_major_version,
-            keep_builtin_filters, global_vars, regex_list, self.filter_id,
-            self.argument_id, base_addr)
+    def convert_filter(
+        self,
+        convert_fn,
+        f,
+        regex_list,
+        ios_major_version,
+        keep_builtin_filters,
+        global_vars,
+        base_addr,
+    ):
+        (self.filter, self.argument) = convert_fn(
+            f,
+            ios_major_version,
+            keep_builtin_filters,
+            global_vars,
+            regex_list,
+            self.filter_id,
+            self.argument_id,
+            base_addr,
+        )
 
     def is_non_terminal_deny(self):
         if self.match.is_non_terminal() and self.unmatch.is_terminal():
@@ -336,7 +406,7 @@ class NonTerminalNode():
             return self.match.terminal.is_allow() and self.unmatch.terminal.is_deny()
 
 
-class OperationNode():
+class OperationNode:
     """A rule item in the binary sandbox profile
 
     It may either be a teminal node (end node) or a non-terminal node
@@ -364,10 +434,8 @@ class OperationNode():
     def parse_terminal(self, ios_major_version):
         self.terminal = TerminalNode()
         self.terminal.parent = self
-        self.terminal.type = \
-            self.raw[2 if ios_major_version <12 else 1] & 0x01
-        self.terminal.flags = \
-            self.raw[2 if ios_major_version <12 else 1] & 0xfe
+        self.terminal.type = self.raw[2 if ios_major_version < 12 else 1] & 0x01
+        self.terminal.flags = self.raw[2 if ios_major_version < 12 else 1] & 0xFE
 
     def parse_non_terminal(self):
         self.non_terminal = NonTerminalNode()
@@ -384,11 +452,26 @@ class OperationNode():
         elif self.is_non_terminal():
             self.parse_non_terminal()
 
-    def convert_filter(self, convert_fn, f, regex_list, ios_major_version,
-            keep_builtin_filters, global_vars, base_addr):
+    def convert_filter(
+        self,
+        convert_fn,
+        f,
+        regex_list,
+        ios_major_version,
+        keep_builtin_filters,
+        global_vars,
+        base_addr,
+    ):
         if self.is_non_terminal():
-            self.non_terminal.convert_filter(convert_fn, f, regex_list,
-                ios_major_version, keep_builtin_filters, global_vars, base_addr)
+            self.non_terminal.convert_filter(
+                convert_fn,
+                f,
+                regex_list,
+                ios_major_version,
+                keep_builtin_filters,
+                global_vars,
+                base_addr,
+            )
 
     def str_debug(self):
         ret = "(%02x) " % (int)(self.offset)
@@ -426,7 +509,7 @@ class OperationNode():
         return self.raw == other.raw
 
     def __hash__(self):
-        return struct.unpack('<I', ''.join([chr(v) for v in self.raw[:4]]))[0]
+        return struct.unpack("<I", "".join([chr(v) for v in self.raw[:4]]))[0]
 
 
 # Operation nodes processed so far.
@@ -446,7 +529,7 @@ def has_been_processed(node):
 
 def build_operation_node(raw, offset, ios_major_version):
     global operations_offset
-    node = OperationNode((offset - operations_offset) / 8) # why offset / 8 ?
+    node = OperationNode((offset - operations_offset) / 8)  # why offset / 8 ?
     node.raw = raw
     node.parse_raw(ios_major_version)
     return node
@@ -463,16 +546,21 @@ def build_operation_nodes(f, num_operation_nodes, ios_major_version):
     for i in range(num_operation_nodes):
         offset = f.tell()
         raw = struct.unpack("<8B", f.read(8))
-        operation_nodes.append(build_operation_node(raw, offset,
-            ios_major_version))
+        operation_nodes.append(build_operation_node(raw, offset, ios_major_version))
 
     # Fill match and unmatch fields for each node in operation_nodes.
     for i in range(len(operation_nodes)):
         if operation_nodes[i].is_non_terminal():
             for j in range(len(operation_nodes)):
-                if operation_nodes[i].non_terminal.match_offset == operation_nodes[j].offset:
+                if (
+                    operation_nodes[i].non_terminal.match_offset
+                    == operation_nodes[j].offset
+                ):
                     operation_nodes[i].non_terminal.match = operation_nodes[j]
-                if operation_nodes[i].non_terminal.unmatch_offset == operation_nodes[j].offset:
+                if (
+                    operation_nodes[i].non_terminal.unmatch_offset
+                    == operation_nodes[j].offset
+                ):
                     operation_nodes[i].non_terminal.unmatch = operation_nodes[j]
 
     return operation_nodes
@@ -531,8 +619,13 @@ def build_operation_node_graph(node, default_node):
     while nodes_to_process:
         (parent_node, current_node) = nodes_to_process.pop()
         if not current_node in g.keys():
-            g[current_node] = {"list": set(), "decision": None,
-                "type": set(["normal"]), "reduce": None, "not": False}
+            g[current_node] = {
+                "list": set(),
+                "decision": None,
+                "type": set(["normal"]),
+                "reduce": None,
+                "not": False,
+            }
         if not parent_node:
             g[current_node]["type"].add("start")
 
@@ -611,7 +704,12 @@ def print_operation_node_graph(g):
         return
     message = ""
     for node_iter in g.keys():
-        message += "0x%x (%s) (%s) (decision: %s): [ " % ((int)(node_iter.offset), str(node_iter), g[node_iter]["type"], g[node_iter]["decision"])
+        message += "0x%x (%s) (%s) (decision: %s): [ " % (
+            (int)(node_iter.offset),
+            str(node_iter),
+            g[node_iter]["type"],
+            g[node_iter]["decision"],
+        )
         for edge in g[node_iter]["list"]:
             message += "0x%x (%s) " % ((int)(edge.offset), str(edge))
         message += "]\n"
@@ -666,6 +764,8 @@ def get_operation_node_graph_paths(g, start_node):
 
 
 nodes_traversed_for_removal = []
+
+
 def _remove_duplicate_node_edges(g, node, start_list):
     global nodes_traversed_for_removal
     nodes_traversed_for_removal.append(node)
@@ -686,8 +786,7 @@ def remove_duplicate_node_edges(g, start_list):
 
 
 def clean_edges_in_operation_node_graph(g):
-    """From the initial graph remove edges that are redundant.
-    """
+    """From the initial graph remove edges that are redundant."""
     global nodes_traversed_for_removal
     start_nodes = []
     final_nodes = []
@@ -703,7 +802,7 @@ def clean_edges_in_operation_node_graph(g):
             g = remove_edge_in_operation_node_graph(g, node_iter, snode)
 
     for snode in start_nodes:
-        nodes_bag = [ snode ]
+        nodes_bag = [snode]
         while True:
             node = nodes_bag.pop()
             nodes_traversed_for_removal = []
@@ -727,7 +826,7 @@ def clean_edges_in_operation_node_graph(g):
         logger.debug(debug_message)
 
         for i in range(0, len(paths)):
-            for j in range(i+1, len(paths)):
+            for j in range(i + 1, len(paths)):
                 # Step over equal length paths.
                 if len(paths[i]) == len(paths[j]):
                     continue
@@ -747,14 +846,15 @@ def clean_edges_in_operation_node_graph(g):
                 for n in q:
                     debug_message += str(n)
                 debug_message += "]"
-                if p[len(p)-1] == q[len(q)-1]:
+                if p[len(p) - 1] == q[len(q) - 1]:
                     for k in range(0, len(p)):
-                        if p[len(p)-1-k] == q[len(q)-1-k]:
+                        if p[len(p) - 1 - k] == q[len(q) - 1 - k]:
                             continue
                         else:
-                            g = remove_edge_in_operation_node_graph(g, q[len(q)-1-k], q[len(q)-k])
+                            g = remove_edge_in_operation_node_graph(
+                                g, q[len(q) - 1 - k], q[len(q) - k]
+                            )
                             break
-
 
     return g
 
@@ -775,7 +875,8 @@ def clean_nodes_in_operation_node_graph(g):
 
 replace_occurred = False
 
-class ReducedVertice():
+
+class ReducedVertice:
     TYPE_SINGLE = "single"
     TYPE_START = "start"
     TYPE_REQUIRE_ANY = "require-any"
@@ -901,14 +1002,18 @@ class ReducedVertice():
                 result_str += ent_str
         else:
             if level == 1:
-                result_str += "\n" + 13*' '
+                result_str += "\n" + 13 * " "
             result_str += "(" + self.type
             level += 1
             for i, v in enumerate(self.value):
                 if i == 0:
                     result_str += " " + v.recursive_str(level, recursive_is_not)
                 else:
-                    result_str += "\n" + 13*level*' ' + v.recursive_str(level, recursive_is_not)
+                    result_str += (
+                        "\n"
+                        + 13 * level * " "
+                        + v.recursive_str(level, recursive_is_not)
+                    )
             result_str += ")"
         return result_str
 
@@ -934,14 +1039,18 @@ class ReducedVertice():
                 result_str += ent_str
         else:
             if level == 1:
-                result_str += "\n" + 13*' '
+                result_str += "\n" + 13 * " "
             result_str += "(" + self.type
             level += 1
             for i, v in enumerate(self.value):
                 if i == 0:
                     result_str += " " + v.recursive_str_debug(level, recursive_is_not)
                 else:
-                    result_str += "\n" + 13*level*' ' + v.recursive_str_debug(level, recursive_is_not)
+                    result_str += (
+                        "\n"
+                        + 13 * level * " "
+                        + v.recursive_str_debug(level, recursive_is_not)
+                    )
             result_str += ")"
         return result_str
 
@@ -949,43 +1058,87 @@ class ReducedVertice():
         result_str = ""
         if self.is_type_single():
             if self.is_not and not recursive_is_not:
-                result_str += level*"\t" + "<require type=\"require-not\">\n"
+                result_str += level * "\t" + '<require type="require-not">\n'
                 (name, argument) = self.value.values()
                 if argument == None:
-                    result_str += (level+1)*"\t" + "<filter name=\"" + str(name) + "\" />\n"
+                    result_str += (
+                        (level + 1) * "\t" + '<filter name="' + str(name) + '" />\n'
+                    )
                 else:
-                    arg = str(argument).replace('&', '&amp;').replace('"', '&quot;').replace('\'', '&apos;').replace('<', '&lt;').replace('>', '&gt;')
-                    result_str += (level+1)*"\t" + "<filter name=\"" + str(name) + "\" argument=\"" + arg + "\" />\n"
-                result_str += level*"\t" + "</require>\n"
+                    arg = (
+                        str(argument)
+                        .replace("&", "&amp;")
+                        .replace('"', "&quot;")
+                        .replace("'", "&apos;")
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;")
+                    )
+                    result_str += (
+                        (level + 1) * "\t"
+                        + '<filter name="'
+                        + str(name)
+                        + '" argument="'
+                        + arg
+                        + '" />\n'
+                    )
+                result_str += level * "\t" + "</require>\n"
             else:
                 (name, argument) = self.value.values()
                 if argument == None:
-                    result_str += level*"\t" + "<filter name=\"" + str(name) + "\" />\n"
+                    result_str += level * "\t" + '<filter name="' + str(name) + '" />\n'
                 else:
-                    arg = str(argument).replace('&', '&amp;').replace('"', '&quot;').replace('\'', '&apos;').replace('<', '&lt;').replace('>', '&gt;')
-                    result_str += level*"\t" + "<filter name=\"" + str(name) + "\" argument=\"" + arg + "\" />\n"
+                    arg = (
+                        str(argument)
+                        .replace("&", "&amp;")
+                        .replace('"', "&quot;")
+                        .replace("'", "&apos;")
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;")
+                    )
+                    result_str += (
+                        level * "\t"
+                        + '<filter name="'
+                        + str(name)
+                        + '" argument="'
+                        + arg
+                        + '" />\n'
+                    )
         elif self.is_type_require_entitlement():
             if self.is_not:
-                result_str += level*"\t" + "<require type=\"require-not\">\n"
+                result_str += level * "\t" + '<require type="require-not">\n'
                 level += 1
-            result_str += level*"\t" + "<require type=\"require-entitlement\""
+            result_str += level * "\t" + '<require type="require-entitlement"'
             (n, i) = self.value
             if i == None:
-                _tmp = str(n.value)[21:-1].replace('&', '&amp;').replace('"', '&quot;').replace('\'', '&apos;').replace('<', '&lt;').replace('>', '&gt;')
-                result_str += " value=\"" + _tmp + "\" />\n"
+                _tmp = (
+                    str(n.value)[21:-1]
+                    .replace("&", "&amp;")
+                    .replace('"', "&quot;")
+                    .replace("'", "&apos;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                )
+                result_str += ' value="' + _tmp + '" />\n'
             else:
-                _tmp = str(n.value)[21:-1].replace('&', '&amp;').replace('"', '&quot;').replace('\'', '&apos;').replace('<', '&lt;').replace('>', '&gt;')
-                result_str += " value=\"" + _tmp + "\">\n"
-                result_str += i.recursive_xml_str(level+1, self.is_not)
-                result_str += level*"\t" + "</require>\n"
+                _tmp = (
+                    str(n.value)[21:-1]
+                    .replace("&", "&amp;")
+                    .replace('"', "&quot;")
+                    .replace("'", "&apos;")
+                    .replace("<", "&lt;")
+                    .replace(">", "&gt;")
+                )
+                result_str += ' value="' + _tmp + '">\n'
+                result_str += i.recursive_xml_str(level + 1, self.is_not)
+                result_str += level * "\t" + "</require>\n"
             if self.is_not:
                 level -= 1
-                result_str += level*"\t" + "</require>\n"
+                result_str += level * "\t" + "</require>\n"
         else:
-            result_str += level*"\t" + "<require type=\"" + self.type + "\">\n"
+            result_str += level * "\t" + '<require type="' + self.type + '">\n'
             for i, v in enumerate(self.value):
-                result_str += v.recursive_xml_str(level+1, recursive_is_not)
-            result_str += level*"\t" + "</require>\n"
+                result_str += v.recursive_xml_str(level + 1, recursive_is_not)
+            result_str += level * "\t" + "</require>\n"
         return result_str
 
     def __str__(self):
@@ -1051,7 +1204,7 @@ class ReducedVertice():
         return self.recursive_xml_str(3, False)
 
 
-class ReducedEdge():
+class ReducedEdge:
     start = None
     end = None
 
@@ -1063,15 +1216,15 @@ class ReducedEdge():
         return self.start.str_debug() + " -> " + self.end.str_debug()
 
     def str_simple(self):
-        #print "start: %s" % (self.start.str_simple())
-        #print "end: %s" % (self.end.str_simple())
+        # print "start: %s" % (self.start.str_simple())
+        # print "end: %s" % (self.end.str_simple())
         return "%s -----> %s" % (self.start.str_simple(), self.end.str_simple())
 
     def __str__(self):
         return str(self.start) + " -> " + str(self.end)
 
 
-class ReducedGraph():
+class ReducedGraph:
     vertices = []
     edges = []
     final_vertices = []
@@ -1182,7 +1335,10 @@ class ReducedGraph():
 
     def replace_vertice_in_single_vertices(self, old, new):
         for v in self.vertices:
-            if len(self.get_next_vertices(v)) == 0 and len(self.get_prev_vertices(v)) == 0:
+            if (
+                len(self.get_next_vertices(v)) == 0
+                and len(self.get_prev_vertices(v)) == 0
+            ):
                 if isinstance(v.value, list):
                     v.replace_in_list(old, new)
 
@@ -1232,7 +1388,9 @@ class ReducedGraph():
         if len(next_vertices) <= 1:
             return
         self.reduce_changes_occurred = True
-        new_vertice = ReducedVertice("require-any", next_vertices, next_vertices[0].decision)
+        new_vertice = ReducedVertice(
+            "require-any", next_vertices, next_vertices[0].decision
+        )
         add_to_final = False
         for n in next_vertices:
             self.remove_edge_by_vertices(v, n)
@@ -1446,7 +1604,10 @@ class ReducedGraph():
         result_str = ""
         for v in self.vertices:
             result_str += "(" + str(v.decision) + " "
-            if len(self.get_next_vertices(v)) == 0 and len(self.get_next_vertices(v)) == 0:
+            if (
+                len(self.get_next_vertices(v)) == 0
+                and len(self.get_next_vertices(v)) == 0
+            ):
                 if v in self.final_vertices:
                     result_str += str(v) + "\n"
             result_str += ")\n"
@@ -1465,7 +1626,12 @@ class ReducedGraph():
         if len(integrated_vertices) == 0:
             return (None, None)
         if len(integrated_vertices) > 1:
-            return (ReducedVertice("require-any", integrated_vertices, integrated_vertices[0].decision), integrated_vertices[0].decision)
+            return (
+                ReducedVertice(
+                    "require-any", integrated_vertices, integrated_vertices[0].decision
+                ),
+                integrated_vertices[0].decision,
+            )
         require_all_vertices = []
         v = integrated_vertices[0]
         decision = None
@@ -1485,8 +1651,22 @@ class ReducedGraph():
         if len(require_all_vertices) == 0:
             return (None, v.decision)
         if len(require_all_vertices) == 1:
-            return (ReducedVertice(value=require_all_vertices[0].value, decision=require_all_vertices[0].decision, is_not=require_all_vertices[0].is_not), v.decision)
-        return (ReducedVertice("require-all", require_all_vertices, require_all_vertices[len(require_all_vertices)-1].decision), v.decision)
+            return (
+                ReducedVertice(
+                    value=require_all_vertices[0].value,
+                    decision=require_all_vertices[0].decision,
+                    is_not=require_all_vertices[0].is_not,
+                ),
+                v.decision,
+            )
+        return (
+            ReducedVertice(
+                "require-all",
+                require_all_vertices,
+                require_all_vertices[len(require_all_vertices) - 1].decision,
+            ),
+            v.decision,
+        )
 
     def aggregate_require_entitlement(self, v):
         next_vertices = []
@@ -1497,7 +1677,7 @@ class ReducedGraph():
                 next_vertices.append(n)
                 break
             integrated_vertices.append(n)
-            current_list = [ n ]
+            current_list = [n]
             while current_list:
                 current = current_list.pop()
                 for n2 in self.get_next_vertices(current):
@@ -1506,7 +1686,9 @@ class ReducedGraph():
                         next_vertices.append(n2)
                     else:
                         current_list.append(n2)
-        new_vertice = ReducedVertice(type="require-entitlement", value=(v, None), decision=None, is_not=v.is_not)
+        new_vertice = ReducedVertice(
+            type="require-entitlement", value=(v, None), decision=None, is_not=v.is_not
+        )
         for p in prev_vertices:
             self.remove_edge_by_vertices(p, v)
             self.add_edge_by_vertices(p, new_vertice)
@@ -1548,17 +1730,19 @@ class ReducedGraph():
                 self.remove_vertice(v)
             elif re.search("entitlement-value #t", v.str_simple()):
                 self.remove_vertice(v)
-            elif re.search("entitlement-value-regex #\"\.\"", v.str_simple()):
-                v.value.non_terminal.argument = "#\".+\""
-            elif re.search("global-name-regex #\"\.\"", v.str_simple()):
-                v.value.non_terminal.argument = "#\".+\""
-            elif re.search("local-name-regex #\"\.\"", v.str_simple()):
-                v.value.non_terminal.argument = "#\".+\""
+            elif re.search('entitlement-value-regex #"\."', v.str_simple()):
+                v.value.non_terminal.argument = '#".+"'
+            elif re.search('global-name-regex #"\."', v.str_simple()):
+                v.value.non_terminal.argument = '#".+"'
+            elif re.search('local-name-regex #"\."', v.str_simple()):
+                v.value.non_terminal.argument = '#".+"'
 
     def replace_require_entitlement_with_metanodes(self, v):
         prev_list = self.get_prev_vertices(v)
         next_list = self.get_next_vertices(v)
-        new_node = ReducedVertice(type="require-entitlement", value=v.value, decision=None, is_not=v.is_not)
+        new_node = ReducedVertice(
+            type="require-entitlement", value=v.value, decision=None, is_not=v.is_not
+        )
         self.add_vertice(new_node)
         self.remove_vertice(v)
         for p in prev_list:
@@ -1583,7 +1767,7 @@ class ReducedGraph():
             out_f.write("(allow %s " % (operation))
             if len(allow_vertices) > 1:
                 for v in allow_vertices:
-                    out_f.write("\n" + 8*" " + str(v))
+                    out_f.write("\n" + 8 * " " + str(v))
             else:
                 out_f.write(str(allow_vertices[0]))
             out_f.write(")\n")
@@ -1591,12 +1775,14 @@ class ReducedGraph():
             out_f.write("(deny %s " % (operation))
             if len(deny_vertices) > 1:
                 for v in deny_vertices:
-                    out_f.write("\n" + 8*" " + str(v))
+                    out_f.write("\n" + 8 * " " + str(v))
             else:
                 out_f.write(str(deny_vertices[0]))
             out_f.write(")\n")
 
-    def print_vertices_with_operation_metanodes(self, operation, default_is_allow, out_f):
+    def print_vertices_with_operation_metanodes(
+        self, operation, default_is_allow, out_f
+    ):
         # Return if only start node in list.
         if len(self.vertices) == 1 and self.vertices[0].is_type_start():
             return
@@ -1625,7 +1811,11 @@ class ReducedGraph():
                         out_f.write("\n" + indent * "\t" + cnode.str_print_not())
                     else:
                         out_f.write("\n" + indent * "\t" + "(require-not " + first)
-                        if cnode.is_type_require_any() or cnode.is_type_require_all() or cnode.is_type_require_entitlement():
+                        if (
+                            cnode.is_type_require_any()
+                            or cnode.is_type_require_all()
+                            or cnode.is_type_require_entitlement()
+                        ):
                             vlist.insert(0, (None, indent))
                         else:
                             out_f.write(")")
@@ -1635,15 +1825,21 @@ class ReducedGraph():
                 vlist.insert(0, (None, indent))
             next_vertices_list = self.get_next_vertices(cnode)
             if next_vertices_list:
-                if cnode.is_type_require_any() or cnode.is_type_require_all() or cnode.is_type_require_entitlement():
+                if (
+                    cnode.is_type_require_any()
+                    or cnode.is_type_require_all()
+                    or cnode.is_type_require_entitlement()
+                ):
                     indent += 1
                 next_vertices_list.reverse()
                 if cnode.is_type_require_entitlement():
                     pos = 0
                     for n in next_vertices_list:
-                        if (n.is_type_single() and not re.search("entitlement-value", n.str_simple())) or \
-                                n.is_type_require_entitlement():
-                            vlist.insert(pos + 1, (n, indent-1))
+                        if (
+                            n.is_type_single()
+                            and not re.search("entitlement-value", n.str_simple())
+                        ) or n.is_type_require_entitlement():
+                            vlist.insert(pos + 1, (n, indent - 1))
                         else:
                             vlist.insert(0, (n, indent))
                             pos += 1
@@ -1656,14 +1852,14 @@ class ReducedGraph():
         allow_vertices = [v for v in self.vertices if v.decision == "allow"]
         deny_vertices = [v for v in self.vertices if v.decision == "deny"]
         if allow_vertices:
-            out_f.write("\t<operation name=\"%s\" action=\"allow\">\n" % (operation))
+            out_f.write('\t<operation name="%s" action="allow">\n' % (operation))
             out_f.write("\t\t<filters>\n")
             for v in allow_vertices:
                 out_f.write(v.xml_str())
             out_f.write("\t\t</filters>\n")
             out_f.write("\t</operation>\n")
         if deny_vertices:
-            out_f.write("\t<operation name=\"%s\" action=\"deny\">\n" % (operation))
+            out_f.write('\t<operation name="%s" action="deny">\n' % (operation))
             out_f.write("\t\t<filters>\n")
             for v in deny_vertices:
                 out_f.write(v.xml_str())
@@ -1675,7 +1871,11 @@ def reduce_operation_node_graph(g):
     # Create reduced graph.
     rg = ReducedGraph()
     for node_iter in g.keys():
-        rv = ReducedVertice(value=node_iter, decision=g[node_iter]["decision"], is_not=g[node_iter]["not"])
+        rv = ReducedVertice(
+            value=node_iter,
+            decision=g[node_iter]["decision"],
+            is_not=g[node_iter]["not"],
+        )
         rg.add_vertice(rv)
 
     for node_iter in g.keys():
@@ -1717,10 +1917,12 @@ def reduce_operation_node_graph(g):
 
 def main():
     if len(sys.argv) != 4:
-        print >> sys.stderr, "Usage: %s binary_sandbox_file operations_file ios_version" % (sys.argv[0])
+        print >> sys.stderr, "Usage: %s binary_sandbox_file operations_file ios_version" % (
+            sys.argv[0]
+        )
         sys.exit(-1)
 
-    ios_major_version = int(sys.argv[3].split('.')[0])
+    ios_major_version = int(sys.argv[3].split(".")[0])
     # Read sandbox operations.
     sb_ops = [l.strip() for l in open(sys.argv[2])]
     num_sb_ops = len(sb_ops)
@@ -1734,14 +1936,14 @@ def main():
     num_regex = struct.unpack("<H", f.read(2))[0]
     logger.debug("num_regex: %02x" % (num_regex))
     f.seek(6)
-    sb_ops_offsets = struct.unpack("<%dH" % (num_sb_ops), f.read(2*num_sb_ops))
+    sb_ops_offsets = struct.unpack("<%dH" % (num_sb_ops), f.read(2 * num_sb_ops))
 
     # Extract node for 'default' operation (index 0).
     default_node = find_operation_node_by_offset(operation_nodes, sb_ops_offsets[0])
     print("(%s default)" % (default_node.terminal))
 
     # For each operation expand operation node.
-    #for idx in range(1, len(sb_ops_offsets)):
+    # for idx in range(1, len(sb_ops_offsets)):
     for idx in range(10, 11):
         offset = sb_ops_offsets[idx]
         operation = sb_ops[idx]
@@ -1749,9 +1951,13 @@ def main():
         if not node:
             logger.info("operation %s (index %d) has no operation node", operation, idx)
             continue
-        logger.debug("expanding operation %s (index %d, offset: %02x)", operation, idx, offset)
+        logger.debug(
+            "expanding operation %s (index %d, offset: %02x)", operation, idx, offset
+        )
         g = build_operation_node_graph(node, default_node)
-        logger.debug("reducing operation %s (index %d, offset: %02x)", operation, idx, offset)
+        logger.debug(
+            "reducing operation %s (index %d, offset: %02x)", operation, idx, offset
+        )
         print_operation_node_graph(g)
         if g:
             rg = reduce_operation_node_graph(g)
