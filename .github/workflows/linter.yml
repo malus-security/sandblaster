@@ -1,14 +1,10 @@
 name: Linter
 
-on:
-  push:
-    branches-ignore: [master, main]
-  pull_request:
-    branches: [master]
+on: [push, pull_request]
 
 jobs:
-  build:
-    name: Linter
+  superlinter:
+    name: Super Linter
     runs-on: ubuntu-latest
 
     steps:
@@ -23,5 +19,9 @@ jobs:
         env:
           # Don't check already existent files
           VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: master
+          VALIDATE_GITHUB_ACTIONS: false
+          LINTER_RULES_PATH: /.github/workflows/
+          MARKDOWN_CONFIG_FILE: config/config.json
+          MARKDOWN_CUSTOM_RULE_GLOBS: rules/rules.js
+          DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
