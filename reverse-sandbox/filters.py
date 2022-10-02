@@ -1,5 +1,6 @@
 import json
 
+
 def read_filters(file_path):
     temp = {}
     filters = {}
@@ -14,13 +15,13 @@ def read_filters(file_path):
 
 class Filters(object):
 
-    filters_ios4 = read_filters('filters/filters_ios4.json')
-    filters_ios5 = read_filters('filters/filters_ios5.json')
-    filters_ios6 = read_filters('filters/filters_ios6.json')
-    filters_ios11 = read_filters('filters/filters_ios11.json')
-    filters_ios12 = read_filters('filters/filters_ios12.json')
-    filters_ios13 = read_filters('filters/filters_ios13.json')
-    filters_ios14 = read_filters('filters/filters_ios14.json')
+    filters_ios4 = read_filters("filters/filters_ios4.json")
+    filters_ios5 = read_filters("filters/filters_ios5.json")
+    filters_ios6 = read_filters("filters/filters_ios6.json")
+    filters_ios11 = read_filters("filters/filters_ios11.json")
+    filters_ios12 = read_filters("filters/filters_ios12.json")
+    filters_ios13 = read_filters("filters/filters_ios13.json")
+    filters_ios14 = read_filters("filters/filters_ios14.json")
 
     @staticmethod
     def get_filters(ios_major_version):
