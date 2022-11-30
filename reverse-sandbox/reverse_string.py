@@ -146,11 +146,14 @@ class ReverseStringState:
     def read_token(self, substr_len):
         self.token_stack.append(self.token)
         self.token = self.binary_string[self.pos:self.pos+substr_len]
-        logger.debug("got token \"{:s}\"".format(self.token))
+        logger.debug("got token \"{:s}\"".format(self.token.decode()))
         self.pos += substr_len
 
     def update_base(self):
-        self.base += self.token
+        if isinstance(self.token, bytes):
+            self.base += self.token.decode()
+        else:
+            self.base += self.token
         self.token = ""
         logger.debug("update base to \"{:s}\"".format(self.base))
 
@@ -168,14 +171,18 @@ class ReverseStringState:
 
     def get_substring(self, substr_len):
         substr = self.binary_string[self.pos:self.pos+substr_len]
-        logger.debug(" ".join("0x{:02x}".format(ord(c)) for c in substr))
+        logger.debug(" ".join("0x{:02x}".format(c) for c in substr))
         self.pos += substr_len
         return substr
 
     def end_with_subtokens(self, subtokens):
         for s in subtokens:
-            self.output_strings.append(self.base+self.token+s)
-            logger.debug("output string with subtokens \"{:s}\"".format(self.base+self.token+s))
+            if isinstance(self.token, bytes):
+                self.output_strings.append(self.base+self.token.decode()+s)
+                logger.debug("output string with subtokens \"{:s}\"".format(self.base+self.token.decode()+s))
+            else:
+                self.output_strings.append(self.base+self.token+s)
+                logger.debug("output string with subtokens \"{:s}\"".format(self.base+self.token+s))
         self.token = ""
 
     def is_end(self):
@@ -227,7 +234,7 @@ class SandboxString:
                 logger.debug("state is STATE_CONSTANT_READ")
                 b = rss.get_last_byte()
                 if b >= 0x10 and b < 0x3f:
-                    rss.token = "${" + global_vars[b-0x10] + "}"
+                    rss.token = b"${" + global_vars[b-0x10] + b"}"
                 b = rss.get_next_byte()
                 rss.update_state(b)
             elif rss.state == rss.STATE_CONCAT_BYTE_READ:
@@ -335,7 +342,7 @@ class SandboxString:
             logger.warn("last state is not STATE_END_BYTE_READ ({:d})".format(rss.state))
             logger.warn("previous state ({:d})".format(rss.state_stack[len(rss.state_stack)-1]))
 
-        logger.info("initial string: " + " ".join("0x{:02x}".format(ord(c)) for c in s))
+        logger.info("initial string: " + " ".join("0x{:02x}".format(c) for c in s))
         logger.info("output_strings (num: {:d}): {:s}".format(len(rss.output_strings), ",".join('"{:s}"'.format(s) for s in rss.output_strings)))
         return rss.output_strings
 

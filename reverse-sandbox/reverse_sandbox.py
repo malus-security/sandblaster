@@ -34,7 +34,12 @@ def extract_string_from_offset(f, offset, ios_version):
     else:
         f.seek(offset * 8)
         len = struct.unpack("<I", f.read(4))[0]-1
-    return '%s' % f.read(len)
+    ret = f.read(len)
+    try:
+       ret = ret.decode()
+    except:
+        pass
+    return ret
 
 
 def create_operation_nodes(infile, regex_list, num_operation_nodes,
@@ -43,10 +48,10 @@ def create_operation_nodes(infile, regex_list, num_operation_nodes,
     operation_nodes = operation_node.build_operation_nodes(infile,
         num_operation_nodes, ios_major_version)
     logger.info("operation nodes")
-    
+
     for idx, node in enumerate(operation_nodes):
         logger.info("%d: %s", idx, node.str_debug())
-    
+
     for n in operation_nodes:
         n.convert_filter(sandbox_filter.convert_filter_callback, infile,
                     regex_list, ios_major_version, keep_builtin_filters,
@@ -211,7 +216,7 @@ def get_global_vars(f, vars_offset, num_vars, base_offset):
             len = struct.unpack("<I", f.read(4))[0]
         s = f.read(len-1)
         global_vars.append(s)
-    logger.info("global variables are {:s}".format(", ".join(s for s in global_vars)))
+    logger.info("global variables are {:s}".format(", ".join(s.decode() for s in global_vars)))
     return global_vars
 
 def get_base_addr(f, ios_version):
@@ -304,7 +309,7 @@ def main():
         re_table_offset = 12
     else:
         re_table_offset = struct.unpack("<H", f.read(2))[0]
-    
+
     if get_ios_major_version(args.release) >= 12:
         f.seek(8)
     re_table_count = struct.unpack("<H", f.read(2))[0]
@@ -319,7 +324,7 @@ def main():
             f.seek(re_table_offset)
         else:
             f.seek(re_table_offset * 8)
-        
+
         re_offsets_table = struct.unpack("<%dH" % re_table_count, f.read(2 * re_table_count))
         for offset in re_offsets_table:
             if get_ios_major_version(args.release) >= 13:
@@ -328,7 +333,7 @@ def main():
             else:
                 f.seek(offset * 8)
                 re_length = struct.unpack("<I", f.read(4))[0]
-            
+
             re = struct.unpack("<%dB" % re_length, f.read(re_length))
             logger.debug("total_re_length: 0x%x", re_length)
             re_debug_str = "re: [", ", ".join([hex(i) for i in re]), "]"
@@ -397,7 +402,7 @@ def main():
                     break
             start = f.tell()
             end = re_table_offset * 8
-            num_operation_nodes = (end - start) / 8
+            num_operation_nodes = (end - start) // 8
         logger.info("number of operation nodes: %u" % num_operation_nodes)
 
         operation_nodes = create_operation_nodes(f, regex_list,
@@ -489,7 +494,8 @@ def main():
                 break
         start = f.tell()
         end = re_table_offset * 8
-        num_operation_nodes = (end - start) / 8
+        # has to be int and not float
+        num_operation_nodes = (end - start) // 8
         logger.info("number of operation nodes: %d ; start: %#x" % (num_operation_nodes, start))
 
         operation_nodes = create_operation_nodes(f, regex_list,
