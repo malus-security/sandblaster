@@ -456,7 +456,7 @@ def create_regex_list(re):
 
     regex_list = []
 
-    version = struct.unpack('>I', ''.join([chr(x) for x in re[:4]]))[0]
+    version = struct.unpack('>I', b''.join([bytes(chr(x), 'utf-8') for x in re[:4]]))[0]
     logger.debug("re.version: 0x%x", version)
 
     i = 4

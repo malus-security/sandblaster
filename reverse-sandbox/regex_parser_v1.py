@@ -111,11 +111,11 @@ node_type_dispatch_table = {
 
 def node_parse(re, i, regex_list, node_idx):
     node_type = struct.unpack('>I',
-        ''.join([chr(x) for x in re[i:i+4]]))[0]
+        b''.join([bytes([x]) for x in re[i:i+4]]))[0]
     node_transition = struct.unpack('>I',
-        ''.join([chr(x) for x in re[i+4:i+8]]))[0]
+        b''.join([bytes([x]) for x in re[i+4:i+8]]))[0]
     node_arg = struct.unpack('>I',
-        ''.join([chr(x) for x in re[i+8:i+12]]))[0]
+        b''.join([bytes([x]) for x in re[i+8:i+12]]))[0]
     i += 12
 
     logger.debug('node idx:{:#010x} type: {:#02x} arg: {:#010x}' \
@@ -136,10 +136,10 @@ def class_parse(re, i, classes, class_idx):
             return c
 
     class_size = struct.unpack('>I',
-        ''.join([chr(x) for x in re[i:i+4]]))[0]
+        b''.join([bytes([x]) for x in re[i:i+4]]))[0]
     i += 0x4
     content = struct.unpack('>{}I'.format(class_size),
-        ''.join([chr(x) for x in re[i:i+4*class_size]]))
+        b''.join([bytes([x]) for x in re[i:i+4*class_size]]))
     i += 0x4 * class_size
     assert(class_size % 2 == 0)
 
@@ -162,23 +162,23 @@ class RegexParser(object):
     @staticmethod
     def parse(re, i, regex_list):
         node_count = struct.unpack('>I',
-            ''.join([chr(x) for x in re[i:i+0x4]]))[0]
+            b''.join([bytes([x]) for x in re[i:i+0x4]]))[0]
         logger.debug('node count = {:#x}'.format(node_count))
 
         start_node = struct.unpack('>I',
-            ''.join([chr(x) for x in re[i+0x4:i+0x8]]))[0]
+            b''.join([bytes([x]) for x in re[i+0x4:i+0x8]]))[0]
         logger.debug('start node = {:#x}'.format(start_node))
 
         end_node = struct.unpack('>I',
-            ''.join([chr(x) for x in re[i+0x8:i+0xC]]))[0]
+            b''.join([bytes([x]) for x in re[i+0x8:i+0xC]]))[0]
         logger.debug('end node = {:#x}'.format(end_node))
 
         cclass_count = struct.unpack('>I',
-            ''.join([chr(x) for x in re[i+0xC:i+0x10]]))[0]
+            b''.join([bytes([x]) for x in re[i+0xC:i+0x10]]))[0]
         logger.debug('character class count = {:#x}'.format(cclass_count))
 
         submatch_count = struct.unpack('>I',
-            ''.join([chr(x) for x in re[i+0x10:i+0x14]]))[0]
+            b''.join([bytes([x]) for x in re[i+0x10:i+0x14]]))[0]
         i += 0x14
         logger.debug('submatch count = {:#x}'.format(submatch_count))
 
