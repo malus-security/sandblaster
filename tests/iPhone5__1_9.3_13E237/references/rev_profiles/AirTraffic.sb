@@ -1,0 +1,135 @@
+(version 1)
+(allow default)
+(deny file-issue-extension
+	(regex #"^/private/var/containers/Data/System/[^/]+/[.]com[.]apple[.]")
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/[.]com[.]apple[.]")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/[.]com[.]apple[.]"))))
+(deny file-mount)
+(deny file-mount-update)
+(deny file-read*
+	(regex #"^/private/var/containers/Data/System/[^/]+/[.]com[.]apple[.]")
+	(require-all
+		(require-not (subpath "/Developer"))
+		(require-not (extension "com.apple.security.exception.files.absolute-path.read-write"))
+		(require-not (extension "com.apple.security.exception.files.home-relative-path.read-write"))
+		(require-not (extension "com.apple.security.exception.files.absolute-path.read-only"))
+		(require-not (extension "com.apple.security.exception.files.home-relative-path.read-only"))
+		(require-not (extension "com.apple.sandbox.executable"))
+		(require-not (literal "/private/var/Managed Preferences/mobile/.GlobalPreferences.plist"))
+		(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/.GlobalPreferences.plist"))
+		(require-not (regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$"))
+		(require-not (subpath "/System/Library"))
+		(require-not (subpath "/usr/lib"))
+		(require-not (subpath "/usr/share"))
+		(require-not (subpath "/private/var/db/timezone"))
+		(require-any
+			(literal "/private/etc/master.passwd")
+			(literal "/private/var")
+			(literal "/private/var/root")
+			(require-all
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.mobileipod.plist"))
+				(require-not (regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$"))
+				(require-not (regex #"^/private/var/mobile" #"^/private/var/euser[0-9]+"))
+				(require-not (subpath "/private/var/tmp"))
+				(require-not (literal "/private/var/preferences/com.apple.security.plist"))
+				(require-not (literal "/private/var/preferences/com.apple.NetworkStatistics.plist"))
+				(require-not (literal "/private/var/preferences/com.apple.networkd.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.itunesstored.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.corevideo.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.coremedia.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.coreaudio.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.avfoundation.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.pairedsync.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.logging.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.demo-settings.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.NanoRegistry.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.homesharing.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.medialibrary.plist"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb-shm"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb-wal"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb-journal"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.ids.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.conference.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.marco.plist"))
+				(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.iokit.IOMobileGraphicsFamily.plist"))
+				(require-any
+					(require-all
+						(extension "com.apple.sandbox.system-container")
+						(require-entitlement "com.apple.security.system-container"))
+					(require-all
+						(require-not (subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.icloud.findmydevice.managed/Library"))
+						(require-not (subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/PublicInfo"))
+						(require-not (literal-prefix "${FRONT_USER_HOME}/Library/Caches/com.apple.MobileGestalt.plist"))
+						(require-not (literal "/dev/ptmx"))
+						(require-not (literal "/dev/aes_0"))
+						(require-not (literal "/dev/random"))
+						(require-not (literal "/dev/urandom"))
+						(require-not (literal "/dev/dtracehelper"))
+						(require-not (literal "/dev/null"))
+						(require-not (literal "/dev/zero"))
+						(require-any
+							(require-not (vnode-type BLOCK-DEVICE))
+							(require-not (vnode-type CHARACTER-DEVICE))))
+					(require-all
+						(extension "com.apple.sandbox.system-group")
+						(require-any
+							(require-entitlement "com.apple.security.system-groups")
+							(require-not (regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/[.]com[.]apple[.]"))
+							(require-entitlement "com.apple.security.system-group-containers")
+							(require-not (regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/[.]com[.]apple[.]")))))))))
+(deny file-unmount)
+(deny file-write*
+	(regex #"^/private/var/containers/Data/System/[^/]+/[.]com[.]apple[.]")
+	(require-all
+		(require-not (extension "com.apple.security.exception.files.absolute-path.read-write"))
+		(require-not (extension "com.apple.security.exception.files.home-relative-path.read-write"))
+		(require-any
+			(literal "/private/etc/master.passwd")
+			(literal "/private/var")
+			(literal "/private/var/root")
+			(require-all
+				(require-not (regex #"^/private/var/mobile" #"^/private/var/euser[0-9]+"))
+				(require-not (subpath "/private/var/tmp"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb-shm"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb-wal"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes"))
+				(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb-journal"))
+				(require-any
+					(require-not (literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-journal"))
+					(vnode-type BLOCK-DEVICE)
+					(vnode-type CHARACTER-DEVICE)
+					(require-not (require-entitlement "com.apple.coreduetd.people"))
+					(require-all
+						(extension "com.apple.sandbox.system-container")
+						(require-entitlement "com.apple.security.system-container"))
+					(require-all
+						(extension "com.apple.sandbox.system-group")
+						(require-any
+							(require-entitlement "com.apple.security.system-groups")
+							(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/[.]com[.]apple[.]")
+							(require-entitlement "com.apple.security.system-group-containers")
+							(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/[.]com[.]apple[.]"))))))))
+(deny file-write-create
+	(literal-prefix "${HOME}/Library/Logs/CrashReporter/CFNetwork_"))
+(deny file-write-data
+	(require-all
+		(require-not (literal-prefix "${HOME}/Media/iTunes_Control/iTunes/MediaLibrary.sqlitedb"))
+		(require-not (literal "/dev/ptmx"))
+		(require-not (literal "/dev/aes_0"))
+		(require-any
+			(literal "/dev/random")
+			(literal "/dev/urandom"))))
+(deny job-creation)
+(deny network-outbound
+	(regex #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))

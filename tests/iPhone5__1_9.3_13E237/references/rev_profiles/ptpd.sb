@@ -1,0 +1,239 @@
+(version 1)
+(deny default)
+(allow file-link)
+(allow file-map-executable)
+(allow file-read*
+	(subpath "/System/Library")
+	(literal "/dev/urandom")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.Accessibility.plist")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.UIKit.plist")
+	(subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.icloud.findmydevice.managed/Library")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/.GlobalPreferences.plist")
+	(literal "/dev/zero")
+	(literal-prefix "${HOME}/Library/Caches/Checkpoint.plist")
+	(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+	(literal "/dev/random")
+	(subpath-prefix "${HOME}/Media")
+	(literal-prefix "${HOME}/Library/Logs/ptpd.log")
+	(subpath "/private/var/db/timezone")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.iokit.IOMobileGraphicsFamily.plist")
+	(extension "com.apple.security.exception.files.home-relative-path.read-only")
+	(extension "com.apple.security.exception.files.home-relative-path.read-write")
+	(subpath-prefix "${HOME}/Library/Logs/CrashReporter/DiagnosticLogs/Photos")
+	(regex #"^/private/var/containers/Data/System/[^/]+/" #"^/private/var/containers/Data/System/[^/]+$")
+	(extension "com.apple.sandbox.executable")
+	(literal "/dev/ptmx")
+	(subpath "/Developer")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.ImageCaptureFramework.plist")
+	(extension "com.apple.security.exception.files.absolute-path.read-only")
+	(regex #"^/private/var/containers/Data/System/[^/]+/")
+	(subpath "/private/var/tmp")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.coremedia.plist")
+	(literal "/dev/dtracehelper")
+	(extension "com.apple.security.exception.files.absolute-path.read-write")
+	(literal "/dev/aes_0")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.mobileslideshow.plist")
+	(literal "/dev/null")
+	(literal "/private/var/Managed Preferences/mobile/.GlobalPreferences.plist")
+	(subpath "/usr/lib")
+	(subpath "/usr/share")
+	(subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/PublicInfo")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Caches/com.apple.MobileGestalt.plist")
+	(require-all
+		(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty"))
+	(require-all
+		(vnode-type TTY)
+		(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/ConfigurationProfiles/PublicInfo$" #"^/private/var/mobile/Library/ConfigurationProfiles/PublicInfo/" #"^/private/var/mobile/Library/UserConfigurationProfiles/PublicInfo$" #"^/private/var/mobile/Library/UserConfigurationProfiles/PublicInfo/" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles/PublicInfo$" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles/PublicInfo/")
+		(subpath-prefix "${FRONT_USER_HOME}"))
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(vnode-type BLOCK-DEVICE)
+		(vnode-type CHARACTER-DEVICE)
+		(require-any
+			(literal "/private/etc/hosts")
+			(literal "/private/etc/group")
+			(literal "/private/etc/passwd")
+			(literal "/")
+			(literal "/private/etc/protocols")
+			(literal "/private/etc/services")
+			(regex #"^/private/var/mobile" #"^/private/var/euser[0-9]+")
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-shm")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-journal")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-wal")
+				(require-entitlement "com.apple.coreduetd.people"))))
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(subpath-prefix "${HOME}/XcodeBuiltProducts")
+		(debug-mode))
+	(require-all
+		(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.bulletinboard.plist")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$"))))
+(allow file-read-metadata
+	(literal-prefix "${HOME}/Library/Caches/powerlog.launchd")
+	(literal-prefix "${HOME}")
+	(literal-prefix "${HOME}/Library/Preferences")
+	(literal-prefix "${HOME}/Library/Logs/CrashReporter/DiagnosticLogs")
+	(vnode-type DIRECTORY)
+	(vnode-type SYMLINK)
+	(literal-prefix "${HOME}/Library/Logs/CrashReporter")
+	(literal "/private/var/run/syslog")
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.send"))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(require-any
+			(literal-prefix "${HOME}/Library/Logs/CrashReporter/DiagnosticLogs")
+			(literal-prefix "${HOME}/Library/Logs/CrashReporter")))
+	(require-all
+		(literal-prefix "${HOME}/Library/Preferences")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(literal-prefix "${HOME}")
+		(require-entitlement "com.apple.bulletinboard.dataprovider")))
+(allow file-write*
+	(extension "com.apple.security.exception.files.absolute-path.read-write")
+	(extension "com.apple.security.exception.files.home-relative-path.read-write")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.ImageCaptureFramework.plist")
+	(subpath-prefix "${HOME}/Library/Logs/CrashReporter/DiagnosticLogs/Photos")
+	(regex #"^/private/var/containers/Data/System/[^/]+/")
+	(subpath-prefix "${HOME}/Media")
+	(literal-prefix "${HOME}/Library/Logs/ptpd.log")
+	(subpath "/private/var/tmp")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.mobileslideshow.plist")
+	(require-all
+		(vnode-type BLOCK-DEVICE)
+		(vnode-type CHARACTER-DEVICE)
+		(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-journal")
+		(require-entitlement "com.apple.coreduetd.people"))
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/"))))
+(allow file-write-create
+	(require-all
+		(vnode-type DIRECTORY)
+		(require-any
+			(literal-prefix "${HOME}/Library/Logs/CrashReporter/DiagnosticLogs")
+			(literal-prefix "${HOME}/Library/Logs/CrashReporter")))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.send")))
+(allow file-write-data
+	(literal "/dev/ptmx")
+	(literal "/dev/aes_0")
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.send"))
+	(require-all
+		(require-not (literal "/dev/random"))
+		(require-not (literal "/dev/urandom"))
+		(require-any
+			(literal "/dev/dtracehelper")
+			(literal "/dev/null")
+			(literal "/dev/zero")
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db")
+				(require-entitlement "com.apple.coreduetd.people"))))
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty"))
+	(require-all
+		(vnode-type TTY)
+		(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$")))
+(allow file-write-mode
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty")))
+(allow file-write-unlink
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive")))
+(allow iokit-open)
+(allow iokit-set-properties)
+(allow iokit-get-properties)
+(allow mach-bootstrap)
+(allow mach-cross-domain-lookup)
+(allow mach-lookup)
+(allow network-outbound
+	(require-all
+		(require-not (regex #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+		(require-any
+			(literal "/private/var/run/lockdown.sock")
+			(literal "/private/var/run/syslog"))))
+(allow nvram*)
+(allow nvram-delete)
+(allow nvram-get)
+(allow nvram-set)
+(allow user-preference-read
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(extension "com.apple.security.exception.shared-preference.read-only")
+	(preference-domain "com.apple.UIKit")
+	(preference-domain "com.apple.mobileslideshow")
+	(preference-domain "com.apple.ImageCaptureFramework")
+	(preference-domain "com.apple.iokit.IOMobileGraphicsFamily")
+	(preference-domain "com.apple.coremedia")
+	(preference-domain "kCFPreferencesAnyApplication")
+	(preference-domain "com.apple.Accessibility")
+	(require-all
+		(preference-domain "com.apple.bulletinboard")
+		(require-entitlement "com.apple.bulletinboard.dataprovider")))
+(allow user-preference-write
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(preference-domain "com.apple.ImageCaptureFramework")
+	(preference-domain "com.apple.mobileslideshow"))
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow pseudo-tty)
+(allow sysctl-read)
+(allow system-privilege)
