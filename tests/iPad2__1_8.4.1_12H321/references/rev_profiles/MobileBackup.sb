@@ -1,0 +1,26 @@
+(version 1)
+(allow default)
+(deny file*
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-chroot
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-read*
+	(subpath "/private/var/run/mobile_image_mounter"))
+(deny file-write*
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-write-create
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-write-unlink
+	(literal "/private/var")
+	(literal "/private/var/run")
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/")
+	(literal "/private"))
+(deny job-creation)
+(deny network-inbound
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny network-bind
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny network-outbound
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/" #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+(deny process-exec-interpreter
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))

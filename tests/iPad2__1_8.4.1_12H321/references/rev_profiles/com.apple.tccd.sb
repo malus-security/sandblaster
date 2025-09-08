@@ -1,0 +1,53 @@
+(version 1)
+(deny default)
+(allow file-issue-extension
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(extension-class-regex #"^com[.]apple[.]tcc[.]")))
+(allow file-read*)
+(allow file-read-data)
+(allow file-read-metadata)
+(allow file-read-xattr)
+(allow file-write*
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(subpath "/private/var/tmp/com.apple.tccd")
+			(subpath "/private/var/mobile/Library/TCC"))))
+(allow iokit-open
+	(iokit-user-client-class "AppleMobileFileIntegrityUserClient"))
+(allow iokit-get-properties)
+(allow ipc-posix-shm*
+	(ipc-posix-name "apple.shm.notification_center"))
+(allow ipc-posix-shm-read*
+	(ipc-posix-name-regex #"^apple[.]shm[.]cfprefsd[.]"))
+(allow mach-bootstrap)
+(allow mach-lookup
+	(global-name "com.apple.backboard.systemservices")
+	(global-name "com.apple.cfprefsd.agent")
+	(global-name "com.apple.lsd")
+	(global-name "com.apple.cfprefsd.daemon")
+	(global-name "com.apple.SBUserNotification")
+	(global-name "com.apple.system.logger")
+	(global-name "com.apple.companionappd")
+	(global-name "com.apple.frontboard.systemappservices")
+	(global-name "com.apple.system.notification_center")
+	(global-name "com.apple.springboard.backgroundappservices")
+	(global-name "com.apple.springboard.services")
+	(global-name "com.apple.librariand")
+	(local-name "com.apple.cfprefsd.agent")
+	(global-name "com.apple.pluginkit.pkd"))
+(allow network-outbound
+	(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/" #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+	(regex #"^/private/tmp/[.]webdavUDS[.][^/]+$"))
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow signal)
+(allow sysctl-read)
+(allow system-privilege)

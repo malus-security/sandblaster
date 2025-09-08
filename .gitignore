@@ -20,5 +20,6 @@ TAGS
 *.pyc
 *.log
 *.bin
+!tests/**/*.bin
 core
 .DS_STORE

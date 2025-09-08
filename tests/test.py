@@ -270,6 +270,8 @@ def generic_test(
 def main():
     container_name = build_image()
 
+    generic_test(container_name, "iPad2__1_8.4.1_12H321", 8, ios_version="8.4.1")
+
     generic_test(container_name, "iPhone5__1_9.3_13E237", 9, ios_version="9.3")
 
     remove_image(container_name)
