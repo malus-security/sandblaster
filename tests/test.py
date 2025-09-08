@@ -278,6 +278,8 @@ def main():
         container_name, "iPhone_4.0_64bit_10.3.3_14G60", 10, ios_version="10.3.3"
     )
 
+    generic_test(container_name, "iPhone6__2_11.0.0_15A372", 11, ios_version="11.0.0")
+
     remove_image(container_name)
 
 
