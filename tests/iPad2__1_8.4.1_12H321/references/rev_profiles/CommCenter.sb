@@ -1,0 +1,293 @@
+(version 1)
+(deny default)
+(allow file-ioctl
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/dev/aes_0")
+			(literal "/dev/ptmx")
+			(literal "/dev/mux.spi-baseband")
+			(literal "/dev/uart.log")
+			(regex #"^/dev/bbcdc[.]" #"^/dev/dlci[.]spi-baseband[.]")
+			(subpath "/private/var/wireless")
+			(literal "/dev/cu.debug")
+			(literal "/dev/uart.debug.log")
+			(literal "/dev/uart.debug")
+			(literal "/dev/mux.log")
+			(literal "/dev/dtracehelper")
+			(literal "/dev/uart.umts"))))
+(allow file-issue-extension
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(require-all
+				(extension "com.apple.sandbox.executable")
+				(extension-class "com.apple.nsurlsessiond.readonly"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(extension "com.apple.sandbox.executable"))
+			(require-all
+				(subpath "/private/var/wireless/Library/Caches/CommCenter")
+				(extension-class "com.apple.nsurlstorage.extension-cache"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read-write")
+				(extension "com.apple.security.exception.files.absolute-path.read-write"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(extension "com.apple.security.exception.files.absolute-path.read-only"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(subpath "/System/Library"))
+			(require-all
+				(subpath "/private/var/wireless/Library/Caches/CommCenterClassic")
+				(extension-class "com.apple.nsurlstorage.extension-cache"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(extension "com.apple.security.exception.files.absolute-path.read-write")))))
+(allow file-read*
+	(literal "/dev/dtracehelper")
+	(subpath "/private/var/mobile/Library/Carrier Bundles")
+	(regex #"^/private/var/tmp/CSI[.]scratch")
+	(literal "/private/var/mobile/Library/Preferences/.GlobalPreferences.plist")
+	(subpath "/private/var/db/timezone")
+	(literal "/dev/uart.umts")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.GEO.plist")
+	(literal "/private/var/Managed Preferences/mobile/.GlobalPreferences.plist")
+	(literal "/dev/mux.spi-baseband")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.persistentconnection.plist")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.cellulardataplan.plist")
+	(literal "/private/var/preferences/com.apple.NetworkStatistics.plist")
+	(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$" #"^/private/var/mobile/Library/Logs/PersistentConnection/CommCenter" #"^/private/var/mobile/Library/Logs/CrashReporter/PersistentConnection/CommCenter")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.videoconference_override.plist")
+	(literal "/dev/ptmx")
+	(literal "/dev/mux.log")
+	(extension "com.apple.security.exception.files.absolute-path.read-only")
+	(subpath "/private/var/tmp")
+	(literal "/dev/null")
+	(subpath "/System/Library/Frameworks")
+	(literal "/dev/uart.debug.log")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.tethering_override.plist")
+	(extension "com.apple.sandbox.executable")
+	(literal "/private/var/preferences/AeneasCustomFlags.plist")
+	(subpath "/private/var/logs/WirelessLibraryLogs")
+	(literal "/private/var/tmp/csilock")
+	(regex #"^/private/var/mobile/Library/CallHistory/call_history[.]db$" #"^/private/var/mobile/Library/Voicemail/voicemail[.]db$")
+	(literal "/dev/uart.log")
+	(literal "/dev/zero")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.operator.plist")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.commcenter.plist")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.MobileSMS.plist")
+	(literal "/dev/cu.debug")
+	(regex #"^/dev/bbcdc[.]" #"^/dev/dlci[.]spi-baseband[.]")
+	(subpath "/usr/share")
+	(extension "com.apple.security.exception.files.absolute-path.read-write")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.iqagent.plist")
+	(literal "/dev/random")
+	(literal "/dev/uart.debug")
+	(subpath "/System/Library")
+	(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+	(literal "/private/var/mobile/Library/Caches/com.apple.MobileGestalt.plist")
+	(subpath "/private/var/mobile/Library/ConfigurationProfiles/PublicInfo")
+	(literal "/dev/aes_0")
+	(subpath "/usr/lib")
+	(literal "/dev/urandom")
+	(subpath "/System/Library/PrivateFrameworks")
+	(literal "/private/var/mobile/Library/SyncedPreferences/com.apple.coretelephony.plist")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.carrier.plist")
+	(literal "/dev")
+	(subpath "/private/var/mobile/Library/LASD")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.locationd.plist")
+	(literal "/private/var/preferences/com.apple.networkd.plist")
+	(require-all
+		(vnode-type TTY)
+		(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$"))
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty"))
+	(require-all
+		(literal "/private/var/mobile/Library/Preferences/com.apple.bulletinboard.plist")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(require-not (vnode-type BLOCK-DEVICE))
+		(require-not (vnode-type CHARACTER-DEVICE))
+		(require-any
+			(literal "/private/etc/group")
+			(literal "/private/etc/passwd")
+			(literal "/private/etc/protocols")
+			(literal "/private/etc/hosts")
+			(literal "/")
+			(require-not (subpath "/private/var/mobile"))
+			(literal "/private/etc/services")))
+	(require-all
+		(subpath "/private/var/tmp")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")))
+	(require-all
+		(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(subpath "/Developer")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")
+			(require-not (require-entitlement "platform-application"))))
+	(require-all
+		(subpath "/private/var/mobile/XcodeBuiltProducts")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode"))))
+(allow file-read-metadata)
+(allow file-write*
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/dev/mux.spi-baseband")
+			(literal "/dev/uart.umts")
+			(literal "/private/var/CommCenter/spool/loading")
+			(subpath "/private/var/tmp")
+			(literal "/dev/uart.log")
+			(literal "/private/var/logs/log-bb-live-stats.txt")
+			(literal "/private/var/preferences/AeneasCustomFlags.plist")
+			(subpath "/private/var/wireless")
+			(literal "/dev/cu.debug")
+			(regex #"^/private/var/logs/CrashReporter/Baseband/log-bb-$" #"^/private/var/logs/CrashReporter/Baseband/log-bb-.+$" #"^/private/var/logs/CoreTelephonyTrace$" #"^/private/var/logs/CoreTelephonyTrace/log-bb-$" #"^/private/var/logs/CoreTelephonyTrace/log-bb-.+$" #"^/private/var/tmp/CSI[.]scratch" #"^/private/var/preferences/csidata$" #"^/private/var/preferences/csidata[.]tmp$" #"^/private/var/mobile/Library/Logs/PersistentConnection/CommCenter" #"^/private/var/mobile/Library/Logs/CrashReporter/PersistentConnection/CommCenter" #"^/private/var/preferences/SystemConfiguration/OSThermalStatus[.]plist$" #"^/private/var/preferences/SystemConfiguration/OSThermalStatus[.]plist-lock$" #"^/private/var/preferences/SystemConfiguration/OSThermalStatus[.]plist-new$" #"^/private/var/mobile/Library/CallHistory/call_history[.]db$" #"^/private/var/mobile/Library/Voicemail/voicemail[.]db$" #"^/dev/bbcdc[.]" #"^/dev/dlci[.]spi-baseband[.]")
+			(subpath "/private/var/logs/WirelessLibraryLogs")
+			(literal "/private/var/tmp/csilock")
+			(literal "/dev/uart.debug.log")
+			(literal "/dev/uart.debug")
+			(literal "/private/var/preferences/SystemConfiguration/preferences.plist-lock")
+			(literal "/dev/mux.log")
+			(subpath "/private/var/mobile/Library/LASD")
+			(literal "/private/var/logs/CoreTelephonyTraceScratch")
+			(extension "com.apple.security.exception.files.absolute-path.read-write")
+			(require-all
+				(subpath "/private/var/tmp")
+				(require-any
+					(debug-mode)
+					(require-entitlement "com.apple.private.security.sandbox.debug-mode"))))))
+(allow file-write-create
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-not (regex #"^/private/var/mobile/Library/Logs/CrashReporter/CFNetwork_"))
+		(require-any
+			(require-all
+				(vnode-type REGULAR-FILE)
+				(extension "com.apple.private.safe-move.send"))
+			(require-all
+				(vnode-type DIRECTORY)
+				(require-any
+					(literal "/private/var/mobile/Library/Logs/PersistentConnection")
+					(literal "/private/var/mobile/Library/Logs/CrashReporter/PersistentConnection"))))))
+(allow file-write-data
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/dev/ptmx")
+			(literal "/dev/aes_0")
+			(require-all
+				(vnode-type TTY)
+				(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$"))
+			(require-all
+				(vnode-type REGULAR-FILE)
+				(extension "com.apple.private.safe-move.send"))
+			(require-all
+				(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+				(extension "com.apple.sandbox.pty"))
+			(require-all
+				(require-not (literal "/dev/urandom"))
+				(require-not (literal "/dev/random"))
+				(require-any
+					(literal "/dev/zero")
+					(literal "/dev/dtracehelper")
+					(literal "/dev/null"))))))
+(allow file-write-mode
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/private/var/mobile/Library/Preferences/com.apple.commcenter.plist")
+			(require-all
+				(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+				(extension "com.apple.sandbox.pty")))))
+(allow file-write-owner
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(literal "/private/var/mobile/Library/Preferences/com.apple.commcenter.plist")))
+(allow file-write-unlink
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive")))
+(allow iokit-open)
+(allow iokit-set-properties)
+(allow iokit-get-properties)
+(allow ipc-posix-shm*
+	(require-all
+		(ipc-posix-name-regex #"^/FSM-" #"^OA-" #"^stack-logs" #"^gdt-[0-9A-Za-z]+-c$" #"^gdt-[0-9A-Za-z]+-s$")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")
+			(require-not (require-entitlement "platform-application")))))
+(allow ipc-posix-shm-read*
+	(ipc-posix-name "apple.shm.notification_center")
+	(ipc-posix-name-regex #"^apple[.]shm[.]cfprefsd[.]"))
+(allow mach-bootstrap)
+(allow mach-lookup)
+(allow mach-register
+	(global-name-regex #"^com[.]apple[.]CoreTelephony[.]LogChannel[.]$" #"^com[.]apple[.]CoreTelephony[.]LogChannel[.][-0-9A-F]+$")
+	(global-name "com.apple.CommCenter.lasd"))
+(allow network-inbound
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(local ip "*:*")
+			(require-all
+				(socket-domain AF_SYSTEM)
+				(socket-protocol 1)))))
+(allow network-outbound
+	(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/" #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$")))
+(allow user-preference-read
+	(preference-domain "com.apple.persistentconnection")
+	(preference-domain "com.apple.videoconference_override")
+	(preference-domain "com.apple.commcenter")
+	(preference-domain "com.apple.carrier")
+	(preference-domain "com.apple.tethering_override")
+	(preference-domain "com.apple.cellulardataplan")
+	(preference-domain "com.apple.iqagent")
+	(preference-domain "kCFPreferencesAnyApplication")
+	(preference-domain "com.apple.operator")
+	(preference-domain "com.apple.MobileSMS")
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(preference-domain "com.apple.locationd")
+	(extension "com.apple.security.exception.shared-preference.read-only")
+	(preference-domain "com.apple.GEO")
+	(require-all
+		(preference-domain "com.apple.bulletinboard")
+		(require-entitlement "com.apple.bulletinboard.dataprovider")))
+(allow user-preference-write
+	(extension "com.apple.security.exception.shared-preference.read-write"))
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow pseudo-tty)
+(allow signal
+	(target self))
+(allow sysctl-read)
+(allow system-info
+	(info-type "net.link.addr"))
+(allow system-privilege)
+(allow system-sched
+	(require-entitlement "com.apple.private.kernel.override-cpumon"))
+(allow system-socket
+	(socket-domain AF_ROUTE)
+	(require-all
+		(socket-domain AF_SYSTEM)
+		(socket-protocol 2))
+	(require-all
+		(socket-domain AF_SYSTEM)
+		(socket-protocol 1)))

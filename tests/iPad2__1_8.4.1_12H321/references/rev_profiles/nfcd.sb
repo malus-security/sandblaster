@@ -1,0 +1,276 @@
+(version 1)
+(deny default)
+(allow file-ioctl
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/dev/aes_0")
+			(literal "/dev/ptmx")
+			(literal "/dev/tty.stockholm")
+			(literal "/dev/dtracehelper"))))
+(allow file-issue-extension
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(extension "com.apple.sandbox.executable"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(extension "com.apple.security.exception.files.absolute-path.read-only"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read-write")
+				(extension "com.apple.security.exception.files.absolute-path.read-write"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(extension "com.apple.security.exception.files.absolute-path.read-write"))
+			(require-all
+				(extension-class "com.apple.app-sandbox.read")
+				(subpath "/System/Library")))))
+(allow file-read*
+	(literal "/dev/zero")
+	(literal "/dev/dtracehelper")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.stockholm.awd.plist")
+	(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$" #"^/private/var/mobile/Library/Logs/awd/awd-nfcd[.]log" #"^/private/var/mobile/Library/Logs/com[.]apple[.]nfcd[.]log" #"^/private/var/mobile/Library/Logs/CrashReporter/DiagnosticLogs/com[.]apple[.]nfcd_")
+	(subpath "/private/var/tmp")
+	(literal "/private/var/mobile/Library/Preferences/.GlobalPreferences.plist")
+	(subpath "/System/Library/Frameworks")
+	(literal "/dev/tty.stockholm")
+	(subpath "/usr/share")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.stockholm.plist")
+	(subpath "/usr/lib")
+	(subpath "/private/var/db/timezone")
+	(literal "/dev/ptmx")
+	(literal "/private/var/mobile/Library/Preferences/com.apple.Duet.plist")
+	(extension "com.apple.security.exception.files.absolute-path.read-write")
+	(literal "/private/var/mobile/Library/Caches/com.apple.MobileGestalt.plist")
+	(literal "/dev/random")
+	(literal "/dev/urandom")
+	(literal "/dev/aes_0")
+	(literal "/usr/libexec")
+	(subpath "/System/Library")
+	(subpath "/System/Library/PrivateFrameworks")
+	(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+	(literal "/dev/null")
+	(subpath "/private/var/mobile/Library/ConfigurationProfiles/PublicInfo")
+	(extension "com.apple.security.exception.files.absolute-path.read-only")
+	(literal "/usr/libexec/nfcd")
+	(extension "com.apple.sandbox.executable")
+	(require-all
+		(subpath "/private/var/tmp")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")))
+	(require-all
+		(literal "/private/var/mobile/Library/Preferences/com.apple.bulletinboard.plist")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(subpath "/private/var/mobile/XcodeBuiltProducts")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")))
+	(require-all
+		(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(require-not (vnode-type BLOCK-DEVICE))
+		(require-not (vnode-type CHARACTER-DEVICE))
+		(require-any
+			(literal "/private/etc/group")
+			(literal "/private/etc/passwd")
+			(literal "/private/etc/services")
+			(literal "/private/etc/hosts")
+			(literal "/")
+			(literal "/private/etc/protocols")))
+	(require-all
+		(subpath "/Developer")
+		(require-any
+			(debug-mode)
+			(require-not (require-entitlement "platform-application"))
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")))
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty"))
+	(require-all
+		(vnode-type TTY)
+		(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$")))
+(allow file-read-metadata
+	(literal "/private/var/mobile/Library/Logs/CrashReporter")
+	(literal "/private/var/run/syslog")
+	(vnode-type SYMLINK)
+	(literal "/private/var/mobile/Library/Caches/powerlog.launchd")
+	(literal "/private/var/mobile/Library/Logs/awd")
+	(literal "/private/var/mobile/Library/Preferences")
+	(literal "/private/var/mobile")
+	(literal "/private/var/mobile/Library/Logs/CrashReporter/DiagnosticLogs")
+	(vnode-type DIRECTORY)
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.send"))
+	(require-all
+		(literal "/private/var/mobile")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(literal "/private/var/mobile/Library/Logs/awd"))
+	(require-all
+		(literal "/private/var/mobile/Library/Preferences")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(require-any
+			(literal "/private/var/mobile/Library/Logs/CrashReporter")
+			(literal "/private/var/mobile/Library/Logs/CrashReporter/DiagnosticLogs")))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive")))
+(allow file-write*
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(subpath "/private/var/tmp")
+			(extension "com.apple.security.exception.files.absolute-path.read-write")
+			(regex #"^/private/var/mobile/Library/Logs/awd/awd-nfcd[.]log" #"^/private/var/mobile/Library/Logs/com[.]apple[.]nfcd[.]log" #"^/private/var/mobile/Library/Logs/CrashReporter/DiagnosticLogs/com[.]apple[.]nfcd_" #"^/private/var/mobile/Library/Preferences/com[.]apple[.]stockholm[.]plist" #"^/private/var/mobile/Library/Preferences/com[.]apple[.]stockholm[.]awd[.]plist")
+			(require-all
+				(subpath "/private/var/tmp")
+				(require-any
+					(debug-mode)
+					(require-entitlement "com.apple.private.security.sandbox.debug-mode"))))))
+(allow file-write-create
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(require-all
+				(vnode-type DIRECTORY)
+				(require-any
+					(literal "/private/var/mobile/Library/Logs/CrashReporter")
+					(literal "/private/var/mobile/Library/Logs/CrashReporter/DiagnosticLogs")))
+			(require-all
+				(vnode-type REGULAR-FILE)
+				(extension "com.apple.private.safe-move.send"))
+			(require-all
+				(vnode-type DIRECTORY)
+				(literal "/private/var/mobile/Library/Logs/awd")))))
+(allow file-write-data
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/dev/ptmx")
+			(literal "/dev/tty.stockholm")
+			(literal "/dev/aes_0")
+			(require-all
+				(vnode-type TTY)
+				(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$"))
+			(require-all
+				(require-not (literal "/dev/urandom"))
+				(require-not (literal "/dev/random"))
+				(require-any
+					(literal "/dev/zero")
+					(literal "/dev/dtracehelper")
+					(literal "/dev/null")))
+			(require-all
+				(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+				(extension "com.apple.sandbox.pty"))
+			(require-all
+				(vnode-type REGULAR-FILE)
+				(extension "com.apple.private.safe-move.send")))))
+(allow file-write-mode
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty")))
+(allow file-write-unlink
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive")))
+(allow iokit-open
+	(iokit-user-client-class "AppleKeyStoreUserClient")
+	(iokit-user-client-class "RootDomainUserClient")
+	(iokit-user-client-class "AppleMobileFileIntegrityUserClient")
+	(extension "com.apple.security.exception.iokit-user-client-class")
+	(iokit-user-client-class "AppleStockholmControlUserClient"))
+(allow iokit-get-properties)
+(allow ipc-posix-shm*
+	(require-all
+		(ipc-posix-name-regex #"^/FSM-" #"^OA-" #"^stack-logs" #"^gdt-[0-9A-Za-z]+-c$" #"^gdt-[0-9A-Za-z]+-s$")
+		(require-any
+			(debug-mode)
+			(require-entitlement "com.apple.private.security.sandbox.debug-mode")
+			(require-not (require-entitlement "platform-application")))))
+(allow ipc-posix-shm-read*
+	(ipc-posix-name "apple.shm.notification_center")
+	(ipc-posix-name-regex #"^apple[.]shm[.]cfprefsd[.]"))
+(allow mach-bootstrap)
+(allow mach-lookup
+	(global-name "com.apple.xpcd")
+	(global-name "com.apple.appsupport.cplogd")
+	(global-name "com.apple.distributed_notifications@1v3")
+	(global-name "com.apple.awdd")
+	(global-name "com.apple.tccd")
+	(global-name "com.apple.aggregated")
+	(global-name "com.apple.ReportCrash.SimulateCrash")
+	(global-name "com.apple.managedconfiguration.profiled.public")
+	(global-name "com.apple.system.logger")
+	(global-name "com.apple.PowerManagement.control")
+	(global-name "com.apple.assertiond.processassertionconnection")
+	(global-name "com.apple.coreservices.lsuseractivitymanager.xpc")
+	(global-name "com.apple.lsd")
+	(global-name "com.apple.commcenter.xpc")
+	(global-name "com.apple.mobilegestalt.xpc")
+	(global-name "com.apple.system.notification_center")
+	(global-name "com.apple.powerlog.plxpclogger.xpc")
+	(global-name "com.apple.hangtracerd")
+	(global-name "com.apple.coreduetd")
+	(global-name "com.apple.duetknowledged.activity")
+	(global-name "com.apple.cfprefsd.agent")
+	(local-name "com.apple.cfprefsd.agent")
+	(global-name "com.apple.diagnosticd")
+	(global-name "com.apple.cfprefsd.daemon")
+	(require-all
+		(extension "com.apple.security.exception.mach-lookup.global-name")
+		(global-name-regex #".+"))
+	(require-all
+		(extension "com.apple.security.exception.mach-lookup.local-name")
+		(local-name-regex #".+"))
+	(require-all
+		(global-name "com.apple.bulletinboard.dataproviderconnection")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(global-name "com.apple.itunesstored.xpc")
+		(require-entitlement "com.apple.itunesstored.private")))
+(allow network-outbound
+	(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/" #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+	(control-name "com.apple.uart.stockholm")
+	(literal "/private/var/run/syslog"))
+(allow user-preference-read
+	(preference-domain "com.apple.stockholm.awd")
+	(preference-domain "com.apple.stockholm")
+	(preference-domain "kCFPreferencesAnyApplication")
+	(preference-domain "com.apple.Duet")
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(extension "com.apple.security.exception.shared-preference.read-only")
+	(require-all
+		(preference-domain "com.apple.bulletinboard")
+		(require-entitlement "com.apple.bulletinboard.dataprovider")))
+(allow user-preference-write
+	(preference-domain "com.apple.stockholm")
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(preference-domain "com.apple.stockholm.awd"))
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow pseudo-tty)
+(allow signal
+	(target self))
+(allow sysctl-read)
+(allow system-privilege)
+(allow system-sched
+	(require-entitlement "com.apple.private.kernel.override-cpumon"))
+(allow system-socket
+	(socket-domain AF_SYSTEM))

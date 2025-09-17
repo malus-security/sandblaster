@@ -1,0 +1,67 @@
+(version 1)
+(deny default)
+(allow file-ioctl
+	(literal "/dev/dtracehelper"))
+(allow file-link)
+(allow file-map-executable)
+(allow file-read*)
+(allow file-read-data)
+(allow file-read-metadata)
+(allow file-read-xattr)
+(allow file-write*
+	(extension "com.apple.sandbox.system-group")
+	(subpath "/private/var/tmp")
+	(regex #"^/private/var/logs/CrashReporter/Sandbox-.+[.]ips" #"^/private/var/logs/CrashReporter/[.]Sandbox-.+[.]ips")
+	(regex #"^/private/var/mobile/Library/Logs/CrashReporter/Sandbox-.+[.]ips" #"^/private/var/mobile/Library/Logs/CrashReporter/[.]Sandbox-.+[.]ips")
+	(require-all
+		(regex #"^/cores/")
+		(require-not (file-mode #o0000))))
+(allow file-write-data
+	(literal "/dev/dtracehelper")
+	(literal "/dev/null")
+	(literal "/dev/zero"))
+(allow iokit-open
+	(iokit-user-client-class "AppleMobileFileIntegrityUserClient"))
+(allow iokit-get-properties)
+(allow ipc-posix-shm*
+	(ipc-posix-name "apple.shm.notification_center"))
+(allow ipc-posix-shm-read*
+	(ipc-posix-name-regex #"^apple[.]shm[.]cfprefsd[.]"))
+(allow mach-bootstrap)
+(allow mach-cross-domain-lookup)
+(allow mach-lookup
+	(global-name "com.apple.containermanagerd")
+	(global-name "com.apple.mobile.keybagd.xpc")
+	(global-name "com.apple.diagnosticd")
+	(global-name "com.apple.system.logger")
+	(global-name "com.apple.mobilegestalt.xpc")
+	(global-name "com.apple.system.DirectoryService.libinfo_v1")
+	(global-name "com.apple.system.notification_center")
+	(global-name "com.apple.cfprefsd.agent")
+	(global-name "com.apple.mobile.keybagd.UserManager.xpc")
+	(global-name "com.apple.cfprefsd.daemon")
+	(global-name "com.apple.system.libinfo.muser")
+	(local-name "com.apple.cfprefsd.agent")
+	(global-name "com.apple.coresymbolicationd"))
+(allow network*
+	(regex #"^/private/var/tmp/sandbox[.]"))
+(allow network-outbound
+	(require-all
+		(require-not (regex #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+		(require-any
+			(regex #"^/private/tmp/[.]webdavUDS[.][^/]+$")
+			(literal "/private/var/run/asl_input"))))
+(allow nvram*)
+(allow nvram-delete)
+(allow nvram-get)
+(allow nvram-set)
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow sysctl-read)
+(allow system-privilege)

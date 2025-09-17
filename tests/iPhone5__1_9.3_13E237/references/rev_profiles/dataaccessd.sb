@@ -1,0 +1,512 @@
+(version 1)
+(deny default)
+(allow file-issue-extension
+	(regex #"^/private/var/containers/Data/System/[^/]+/")
+	(regex #"^/private/var/containers/Data/System/[^/]+/" #"^/private/var/containers/Data/System/[^/]+$")
+	(regex #"^/private/var/containers/Data/System/[^/]+/")
+	(regex #"^/private/var/containers/Data/System/[^/]+/" #"^/private/var/containers/Data/System/[^/]+$")
+	(require-all
+		(extension-class "com.apple.app-sandbox.read-write")
+		(require-any
+			(extension "com.apple.security.exception.files.absolute-path.read-write")
+			(extension "com.apple.security.exception.files.home-relative-path.read-write")))
+	(require-all
+		(extension-class "com.apple.nsurlstorage.extension-cache")
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(extension-class "com.apple.nsurlsessiond.readonly")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(subpath "/System/Library"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(subpath-prefix "${HOME}/Library/Cookies"))
+	(require-all
+		(extension-class "com.apple.sharing.airdrop.readonly")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension-class "com.apple.mediaserverd.read")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(extension "com.apple.sandbox.executable"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read-write")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(require-any
+			(extension "com.apple.security.exception.files.absolute-path.read-only")
+			(extension "com.apple.security.exception.files.home-relative-path.read-only")))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read-write")
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read-write")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension "com.apple.sandbox.executable")
+		(extension-class "com.apple.nsurlsessiond.readonly"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")))
+	(require-all
+		(extension-class "com.apple.sharing.airdrop.readonly")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(require-any
+			(extension "com.apple.security.exception.files.absolute-path.read-write")
+			(extension "com.apple.security.exception.files.home-relative-path.read-write")))
+	(require-all
+		(extension-class "com.apple.mediaserverd.read-write")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension-class "com.apple.mediaserverd.read")
+		(subpath "/System/Library"))
+	(require-all
+		(extension-class "com.apple.mediaserverd.read")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read")
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension-class "com.apple.app-sandbox.read-write")
+		(subpath-prefix "${HOME}/Library/Cookies"))
+	(require-all
+		(extension-class "com.apple.mediaserverd.read-write")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(extension-class "com.apple.nsurlsessiond.readonly")
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container")))
+(allow file-map-executable)
+(allow file-read*
+	(literal-prefix "${HOME}/Library/Safari/com.apple.Bookmarks.lock")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db-shm")
+	(literal "/dev/urandom")
+	(subpath-prefix "${HOME}/Library/Logs/DataMigration")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.persistentconnection.plist")
+	(subpath-prefix "${HOME}/Library/Mail")
+	(subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles")
+	(subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.icloud.findmydevice.managed/Library")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.icloud.findmydeviced.public.notbackedup.plist")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.PeoplePicker.plist")
+	(literal-prefix "${HOME}/Library/Logs")
+	(subpath "/AppleInternal/Library/Frameworks")
+	(literal "/dev/zero")
+	(literal "/private/var/preferences/com.apple.security.plist")
+	(subpath "/usr/share")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.AOSNotification.public.notbackedup.plist")
+	(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db")
+	(literal "/dev/ptmx")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.CoreDuet.plist")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.accountsd.plist")
+	(regex #"^/System/Library/Carrier Bundles/[.]png$" #"^/System/Library/Carrier Bundles/.+[.]png$")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.notes.objectcreation.lock")
+	(extension "com.apple.sandbox.executable")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.notes.autoincrement.lock")
+	(subpath "/System/Library")
+	(literal-prefix "${HOME}/Library/Caches")
+	(subpath-prefix "${HOME}/Library/DataAccess")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.icloud.findmydeviced.postwipe.plist")
+	(subpath "/private/var/db/timezone")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db-journal")
+	(extension "com.apple.security.exception.files.home-relative-path.read-only")
+	(extension "com.apple.security.exception.files.home-relative-path.read-write")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.persistentconnection.intervalcache.plist")
+	(regex #"^/private/var/containers/Data/System/[^/]+/")
+	(subpath-prefix "${HOME}/Library/Caches/com.apple.dataaccess.dataaccessd")
+	(subpath-prefix "${HOME}/Library/Logs/DataAccess")
+	(subpath-prefix "${HOME}/Library/Logs/CrashReporter")
+	(subpath-prefix "${HOME}/Library/Notes")
+	(literal "/private/var/preferences/com.apple.NetworkStatistics.plist")
+	(subpath-prefix "${HOME}/Library/Preferences")
+	(literal "/private/var/preferences/com.apple.networkd.plist")
+	(regex #"^/System/Library/Carrier Bundles//carrier[.]plist$" #"^/System/Library/Carrier Bundles/.+/carrier[.]plist$")
+	(subpath-prefix "${HOME}/Library/Logs/Message")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.notes.sharedstore.lock")
+	(subpath "/Developer")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.WebFoundation.plist")
+	(literal "/dev/aes_0")
+	(literal-prefix "${HOME}/Library/Caches/.com.apple.persistentconnection.settings.lock.lock")
+	(extension "com.apple.security.exception.files.absolute-path.read-only")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db-wal")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.appleaccount.plist")
+	(subpath-prefix "${HOME}/Library/Cookies")
+	(subpath-prefix "${HOME}/Library/Carrier Bundles/Overlay")
+	(subpath "/private/var/tmp")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.persistentconnection.intervalcache.plist.lock")
+	(subpath-prefix "${HOME}/Library/Caches/DataAccess")
+	(literal "/dev/random")
+	(subpath-prefix "${HOME}/Library/Caches/com.apple.mobilesafari/ReadingListArchives")
+	(subpath "/private/var/Managed Preferences/mobile")
+	(literal "/dev/dtracehelper")
+	(literal-prefix "${HOME}/Media/com.apple.itunes.lock_sync")
+	(subpath-prefix "${HOME}/Library/Logs/ManagedConfiguration")
+	(extension "com.apple.security.exception.files.absolute-path.read-write")
+	(subpath-prefix "${HOME}/Library/Calendar")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/.GlobalPreferences.plist")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.DataMigration.plist")
+	(regex #"^/private/var/containers/Data/System/[^/]+/" #"^/private/var/containers/Data/System/[^/]+$")
+	(literal "/dev/null")
+	(subpath "/usr/lib")
+	(subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles/PublicInfo")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.AppSupport.plist")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Caches/com.apple.MobileGestalt.plist")
+	(literal-prefix "${HOME}/Library/Safari")
+	(require-all
+		(regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Logs/PersistentConnection/" #"^/private/var/mobile/Library/Logs/CrashReporter/PersistentConnection/" #"^/private/var/euser[0-9]+/Library/Logs/(CrashReporter/)?PersistentConnection/")
+		(subpath-prefix "${FRONT_USER_HOME}"))
+	(require-all
+		(vnode-type TTY)
+		(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/ConfigurationProfiles/PublicInfo$" #"^/private/var/mobile/Library/ConfigurationProfiles/PublicInfo/" #"^/private/var/mobile/Library/UserConfigurationProfiles/PublicInfo$" #"^/private/var/mobile/Library/UserConfigurationProfiles/PublicInfo/" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles/PublicInfo$" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles/PublicInfo/")
+		(subpath-prefix "${FRONT_USER_HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/ConfigurationProfiles$" #"^/private/var/mobile/Library/ConfigurationProfiles/" #"^/private/var/mobile/Library/UserConfigurationProfiles$" #"^/private/var/mobile/Library/UserConfigurationProfiles/" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles$" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles/")
+		(subpath-prefix "${FRONT_USER_HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Carrier Bundles/[.]bundle$" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]bundle$" #"^/private/var/mobile/Library/Carrier Bundles/[.]bundle/Info[.]plist$" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]bundle/Info[.]plist$" #"^/private/var/mobile/Library/Carrier Bundles/[.]bundle/[.]lproj/" #"^/private/var/mobile/Library/Carrier Bundles/[.]bundle/[.]lproj$" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]bundle/[.]lproj/" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]bundle/[.]lproj$" #"^/private/var/mobile/Library/Carrier Bundles/[.]bundle/[^/]+[.]lproj/" #"^/private/var/mobile/Library/Carrier Bundles/[.]bundle/[^/]+[.]lproj$" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]bundle/[^/]+[.]lproj/" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]bundle/[^/]+[.]lproj$" #"^/private/var/euser[0-9]+/Library/Carrier Bundles/.*[.]bundle$" #"^/private/var/euser[0-9]+/Library/Carrier Bundles/.*[.]bundle/Info[.]plist$" #"^/private/var/euser[0-9]+/Library/Carrier Bundles/((.*[.]bundle/|[.]bundle/[^/]+)|.+[.]bundle/[^/]+)[.]lproj/" #"^/private/var/euser[0-9]+/Library/Carrier Bundles/((.*[.]bundle/|[.]bundle/[^/]+)|.+[.]bundle/[^/]+)[.]lproj$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(subpath-prefix "${HOME}/Library/AddressBook")
+		(extension "com.apple.tcc.kTCCServiceAddressBook"))
+	(require-all
+		(subpath-prefix "${HOME}/XcodeBuiltProducts")
+		(debug-mode))
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(require-not (vnode-type BLOCK-DEVICE))
+		(require-not (vnode-type CHARACTER-DEVICE))
+		(require-any
+			(literal "/private/etc/hosts")
+			(literal "/private/etc/group")
+			(literal "/private/etc/passwd")
+			(require-not (regex #"^/private/var/mobile/Library/" #"^/private/var/euser[0-9]+/Library/"))
+			(literal "/")
+			(literal "/private/etc/protocols")
+			(literal "/private/etc/services")
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-shm")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-wal")
+				(require-entitlement "com.apple.coreduetd.people"))
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-journal")
+				(require-entitlement "com.apple.coreduetd.people"))))
+	(require-all
+		(literal-prefix "${HOME}/Library/Preferences/com.apple.mobilephone.speeddial.plist")
+		(extension "com.apple.tcc.kTCCServiceAddressBook"))
+	(require-all
+		(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.bulletinboard.plist")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/" #"^/private/var/containers/Shared/SystemGroup/[^/]+$")))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Cookies/com.apple.dataaccessd.binarycookies" #"^/private/var/mobile/Library/Cookies/com.apple.dataaccessd..+binarycookies" #"^/private/var/euser[0-9]+/Library/Cookies/com.apple.dataaccessd..*binarycookies")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Carrier Bundles/[.]png$" #"^/private/var/mobile/Library/Carrier Bundles/.+[.]png$" #"^/private/var/euser[0-9]+/Library/Carrier Bundles/.*[.]png$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Carrier Bundles//carrier[.]plist$" #"^/private/var/mobile/Library/Carrier Bundles/.+/carrier[.]plist$" #"^/private/var/euser[0-9]+/Library/Carrier Bundles/.*/carrier[.]plist$")
+		(subpath-prefix "${HOME}")))
+(allow file-read-metadata
+	(literal-prefix "${HOME}/Library/Caches/powerlog.launchd")
+	(literal-prefix "${HOME}")
+	(subpath-prefix "${HOME}/Library/Carrier Bundles")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Logs/PersistentConnection")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Logs/CrashReporter/PersistentConnection")
+	(vnode-type DIRECTORY)
+	(vnode-type SYMLINK)
+	(literal-prefix "${HOME}/Library/Preferences")
+	(literal "/private/var/run/syslog")
+	(literal-prefix "${HOME}/Library/Caches")
+	(require-all
+		(vnode-type DIRECTORY)
+		(require-any
+			(literal-prefix "${FRONT_USER_HOME}/Library/Logs/PersistentConnection")
+			(literal-prefix "${FRONT_USER_HOME}/Library/Logs/CrashReporter/PersistentConnection")))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.send"))
+	(require-all
+		(literal-prefix "${HOME}")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(literal-prefix "${HOME}/Library/Preferences")
+		(require-entitlement "com.apple.bulletinboard.dataprovider"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(literal-prefix "${HOME}/Library/Caches"))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive")))
+(allow file-write*
+	(extension "com.apple.security.exception.files.absolute-path.read-write")
+	(extension "com.apple.security.exception.files.home-relative-path.read-write")
+	(subpath-prefix "${HOME}/Library/Logs/DataMigration")
+	(regex #"^/private/var/containers/Data/System/[^/]+/")
+	(literal-prefix "${HOME}/Library/Safari/com.apple.Bookmarks.lock")
+	(subpath-prefix "${HOME}/Library/Caches/com.apple.dataaccess.dataaccessd")
+	(literal-prefix "${HOME}/Media/com.apple.itunes.lock_sync")
+	(subpath "/private/var/Managed Preferences/mobile")
+	(literal-prefix "${FRONT_USER_HOME}/Library/Preferences/com.apple.PeoplePicker.plist")
+	(subpath-prefix "${HOME}/Library/Logs/DataAccess")
+	(subpath-prefix "${HOME}/Library/Logs/CrashReporter")
+	(subpath-prefix "${HOME}/Library/Notes")
+	(subpath-prefix "${HOME}/Library/Mail")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.notes.sharedstore.lock")
+	(subpath-prefix "${HOME}/Library/Preferences")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.persistentconnection.intervalcache.plist")
+	(subpath-prefix "${HOME}/Library/Logs/Message")
+	(subpath-prefix "${HOME}/Library/Logs/ManagedConfiguration")
+	(subpath "/private/var/containers/Shared/SystemGroup/systemgroup.com.apple.configurationprofiles/Library/ConfigurationProfiles")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.notes.objectcreation.lock")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.notes.autoincrement.lock")
+	(subpath-prefix "${HOME}/Library/Cookies")
+	(subpath-prefix "${HOME}/Library/Caches/DataAccess")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db-shm")
+	(literal-prefix "${HOME}/Library/Caches/.com.apple.persistentconnection.settings.lock.lock")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db-wal")
+	(subpath-prefix "${HOME}/Library/DataAccess")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db-journal")
+	(subpath-prefix "${HOME}/Library/Calendar")
+	(subpath "/private/var/tmp")
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db")
+	(literal-prefix "${HOME}/Library/Safari")
+	(literal-prefix "${HOME}/Library/Caches/com.apple.persistentconnection.intervalcache.plist.lock")
+	(require-all
+		(extension "com.apple.sandbox.system-group")
+		(require-any
+			(require-entitlement "com.apple.security.system-group-containers")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")
+			(require-entitlement "com.apple.security.system-groups")
+			(regex #"^/private/var/containers/Shared/SystemGroup/[^/]+/")))
+	(require-all
+		(extension "com.apple.sandbox.system-container")
+		(require-entitlement "com.apple.security.system-container"))
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(vnode-type BLOCK-DEVICE)
+		(vnode-type CHARACTER-DEVICE)
+		(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db-journal")
+		(require-entitlement "com.apple.coreduetd.people"))
+	(require-all
+		(literal-prefix "${HOME}/Library/Preferences/com.apple.mobilephone.speeddial.plist")
+		(extension "com.apple.tcc.kTCCServiceAddressBook"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/ConfigurationProfiles$" #"^/private/var/mobile/Library/ConfigurationProfiles/" #"^/private/var/mobile/Library/UserConfigurationProfiles$" #"^/private/var/mobile/Library/UserConfigurationProfiles/" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles$" #"^/private/var/euser[0-9]+/Library/(User)?ConfigurationProfiles/")
+		(subpath-prefix "${FRONT_USER_HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Logs/PersistentConnection/" #"^/private/var/mobile/Library/Logs/CrashReporter/PersistentConnection/" #"^/private/var/euser[0-9]+/Library/Logs/(CrashReporter/)?PersistentConnection/")
+		(subpath-prefix "${FRONT_USER_HOME}"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(regex #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/mobile/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd/" #"^/private/var/euser[0-9]+/Library/Caches/com[.]apple[.]nsurlsessiond/Downloads/com[.]apple[.]dataaccess[.]dataaccessd$")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(regex #"^/private/var/mobile/Library/Cookies/com.apple.dataaccessd.binarycookies" #"^/private/var/mobile/Library/Cookies/com.apple.dataaccessd..+binarycookies" #"^/private/var/euser[0-9]+/Library/Cookies/com.apple.dataaccessd..*binarycookies")
+		(subpath-prefix "${HOME}"))
+	(require-all
+		(vnode-type DIRECTORY)
+		(literal-prefix "${HOME}/Library/Safari"))
+	(require-all
+		(subpath-prefix "${HOME}/Library/AddressBook")
+		(extension "com.apple.tcc.kTCCServiceAddressBook")))
+(allow file-write-create
+	(require-all
+		(require-not (literal-prefix "${HOME}/Library/Logs/CrashReporter/CFNetwork_"))
+		(require-any
+			(require-all
+				(vnode-type DIRECTORY)
+				(literal-prefix "${HOME}/Library/Caches"))
+			(require-all
+				(vnode-type REGULAR-FILE)
+				(extension "com.apple.private.safe-move.send"))
+			(require-all
+				(vnode-type DIRECTORY)
+				(require-any
+					(literal-prefix "${FRONT_USER_HOME}/Library/Logs/PersistentConnection")
+					(literal-prefix "${FRONT_USER_HOME}/Library/Logs/CrashReporter/PersistentConnection"))))))
+(allow file-write-data
+	(literal-prefix "${HOME}/Library/Safari/Bookmarks.db")
+	(literal "/dev/ptmx")
+	(literal "/dev/aes_0")
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.send"))
+	(require-all
+		(vnode-type TTY)
+		(regex #"^/dev/ttyp[0-9a-f]$" #"^/dev/ptyp[0-9a-f]$"))
+	(require-all
+		(require-not (literal "/dev/random"))
+		(require-not (literal "/dev/urandom"))
+		(require-any
+			(literal "/dev/dtracehelper")
+			(literal "/dev/null")
+			(literal "/dev/zero")
+			(require-all
+				(literal-prefix "${HOME}/Library/CoreDuet/People/interactionC.db")
+				(require-entitlement "com.apple.coreduetd.people"))))
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty")))
+(allow file-write-mode
+	(require-all
+		(regex #"^/dev/ttys[0-9]" #"^/dev/ttys[0-9]+")
+		(extension "com.apple.sandbox.pty")))
+(allow file-write-unlink
+	(subpath-prefix "${HOME}/Library/Caches/com.apple.mobilesafari/ReadingListArchives")
+	(require-all
+		(vnode-type REGULAR-FILE)
+		(extension "com.apple.private.safe-move.receive")))
+(allow iokit-open)
+(allow iokit-set-properties)
+(allow iokit-get-properties)
+(allow mach-bootstrap)
+(allow mach-cross-domain-lookup)
+(allow mach-lookup)
+(allow nvram*)
+(allow nvram-delete)
+(allow nvram-get)
+(allow nvram-set)
+(allow user-preference-read
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(extension "com.apple.security.exception.shared-preference.read-only")
+	(preference-domain "com.apple.AppSupport")
+	(preference-domain "com.apple.PeoplePicker")
+	(preference-domain "com.apple.appleaccount")
+	(preference-domain "com.apple.icloud.findmydeviced.postwipe")
+	(preference-domain "com.apple.persistentconnection")
+	(preference-domain "com.apple.carrier")
+	(preference-domain "com.apple.accountsd")
+	(preference-domain "com.apple.icloud.findmydeviced.public.notbackedup")
+	(preference-domain "com.apple.WebFoundation")
+	(preference-domain "kCFPreferencesAnyApplication")
+	(preference-domain "com.apple.CoreDuet")
+	(preference-domain "com.apple.AOSNotification.public.notbackedup")
+	(preference-domain "com.apple.DataMigration")
+	(require-all
+		(preference-domain "com.apple.bulletinboard")
+		(require-entitlement "com.apple.bulletinboard.dataprovider")))
+(allow user-preference-write
+	(extension "com.apple.security.exception.shared-preference.read-write")
+	(preference-domain "com.apple.PeoplePicker"))
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow pseudo-tty)
+(allow signal)
+(allow sysctl-read)
+(allow system-privilege)
+(allow system-sched)

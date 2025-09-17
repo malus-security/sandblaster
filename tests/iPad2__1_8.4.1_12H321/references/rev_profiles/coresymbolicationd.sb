@@ -1,0 +1,63 @@
+(version 1)
+(deny default)
+(allow file-ioctl
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(literal "/dev/dtracehelper")))
+(allow file-read*
+	(literal "/dev/random")
+	(literal "/dev/urandom")
+	(subpath "/")
+	(literal "/dev/zero")
+	(literal "/dev/dtracehelper")
+	(literal "/dev/null")
+	(require-all
+		(file-mode #o0004)
+		(require-any
+			(subpath "/usr/share")
+			(subpath "/usr/lib")
+			(subpath "/System")
+			(subpath "/private/var/db/dyld"))))
+(allow file-read-metadata
+	(literal "/tmp")
+	(literal "/var")
+	(literal "/private/etc/localtime")
+	(literal "/etc"))
+(allow file-write*
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(subpath "/System/Library/Caches/com.apple.coresymbolicationd")
+			(subpath "/private/var/root/Library/Caches/com.apple.coresymbolicationd")
+			(require-all
+				(regex #"^/cores/")
+				(require-not (file-mode #o0000))))))
+(allow file-write-data
+	(require-all
+		(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+		(require-any
+			(literal "/dev/zero")
+			(literal "/dev/dtracehelper")
+			(literal "/dev/null"))))
+(allow iokit-get-properties)
+(allow mach-bootstrap)
+(allow mach-lookup
+	(global-name "com.apple.system.logger")
+	(global-name "com.apple.system.notification_center")
+	(global-name "com.apple.system.DirectoryService.libinfo_v1"))
+(allow network-outbound
+	(require-not (regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/" #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+	(literal "/private/var/run/asl_input"))
+(allow process-info*)
+(allow process-info-listpids)
+(allow process-info-pidinfo)
+(allow process-info-pidfdinfo)
+(allow process-info-pidfileportinfo)
+(allow process-info-setcontrol)
+(allow process-info-dirtycontrol)
+(allow process-info-rusage)
+(allow signal
+	(target self)
+	(target self))
+(allow sysctl-read)
+(allow system-privilege)

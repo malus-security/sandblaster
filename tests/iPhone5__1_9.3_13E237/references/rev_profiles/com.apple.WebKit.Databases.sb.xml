@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="us-ascii" standalone="yes"?>
+<!DOCTYPE operations [
+<!ELEMENT operations (operation*)>
+<!ELEMENT operation (filters?)>
+<!ELEMENT filters (filter | require)*>
+<!ELEMENT require (filter | require)*>
+<!ELEMENT filter (#PCDATA)>
+<!ATTLIST operation
+	name CDATA #REQUIRED
+	action (deny|allow) #REQUIRED>
+<!ATTLIST require
+	type (require-all|require-any|require-not|require-entitlement) #REQUIRED
+	value CDATA #IMPLIED>
+<!ATTLIST filter
+	name CDATA #REQUIRED
+	argument CDATA #IMPLIED>
+]>
+<operations>
+	<operation name="default" action="deny" />
+	<operation name="file-link" action="allow" />
+	<operation name="file-map-executable" action="allow" />
+	<operation name="file-read-metadata" action="allow" />
+	<operation name="iokit-get-properties" action="allow" />
+	<operation name="mach-bootstrap" action="allow" />
+	<operation name="mach-cross-domain-lookup" action="allow" />
+	<operation name="nvram*" action="allow" />
+	<operation name="nvram-delete" action="allow" />
+	<operation name="nvram-get" action="allow" />
+	<operation name="nvram-set" action="allow" />
+	<operation name="process-info*" action="allow" />
+	<operation name="process-info-listpids" action="allow" />
+	<operation name="process-info-pidinfo" action="allow" />
+	<operation name="process-info-pidfdinfo" action="allow" />
+	<operation name="process-info-pidfileportinfo" action="allow" />
+	<operation name="process-info-setcontrol" action="allow" />
+	<operation name="process-info-dirtycontrol" action="allow" />
+	<operation name="process-info-rusage" action="allow" />
+	<operation name="pseudo-tty" action="allow" />
+	<operation name="sysctl-read" action="allow" />
+	<operation name="system-audit" action="allow" />
+	<operation name="system-privilege" action="allow" />
+</operations>

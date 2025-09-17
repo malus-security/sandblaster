@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="us-ascii" standalone="yes"?>
+<!DOCTYPE operations [
+<!ELEMENT operations (operation*)>
+<!ELEMENT operation (filters?)>
+<!ELEMENT filters (filter | require)*>
+<!ELEMENT require (filter | require)*>
+<!ELEMENT filter (#PCDATA)>
+<!ATTLIST operation
+	name CDATA #REQUIRED
+	action (deny|allow) #REQUIRED>
+<!ATTLIST require
+	type (require-all|require-any|require-not|require-entitlement) #REQUIRED
+	value CDATA #IMPLIED>
+<!ATTLIST filter
+	name CDATA #REQUIRED
+	argument CDATA #IMPLIED>
+]>
+<operations>
+	<operation name="default" action="allow" />
+	<operation name="file-mount" action="deny" />
+	<operation name="file-mount-update" action="deny" />
+	<operation name="file-unmount" action="deny" />
+	<operation name="job-creation" action="deny" />
+</operations>

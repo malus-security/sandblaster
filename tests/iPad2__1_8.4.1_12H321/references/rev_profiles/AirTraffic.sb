@@ -1,0 +1,86 @@
+(version 1)
+(allow default)
+(deny file*
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-chroot
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-ioctl
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-issue-extension
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-mount)
+(deny file-read*
+	(require-all
+		(require-not (subpath "/usr/share"))
+		(require-not (subpath "/usr/lib"))
+		(require-not (subpath "/System/Library"))
+		(require-not (literal "/private/var/mobile/Library/Preferences/.GlobalPreferences.plist"))
+		(require-not (regex #"^/private/var/Managed Preferences/mobile/com[.]apple[.].+[.]plist$"))
+		(require-not (extension "com.apple.sandbox.executable"))
+		(require-not (extension "com.apple.security.exception.files.absolute-path.read-only"))
+		(require-not (extension "com.apple.security.exception.files.absolute-path.read-write"))
+		(require-not (subpath "/System/Library/Frameworks"))
+		(require-not (subpath "/System/Library/PrivateFrameworks"))
+		(require-not (subpath "/private/var/db/timezone"))
+		(require-any
+			(literal "/private/var")
+			(literal "/private/var/root")
+			(literal "/private/etc/master.passwd")
+			(require-all
+				(require-not (literal "/dev/zero"))
+				(require-not (literal "/dev/dtracehelper"))
+				(require-not (literal "/dev/random"))
+				(require-not (literal "/dev/urandom"))
+				(require-not (literal "/dev/aes_0"))
+				(require-not (literal "/dev/ptmx"))
+				(require-not (literal "/private/var/mobile/Library/Caches/com.apple.MobileGestalt.plist"))
+				(require-not (subpath "/private/var/mobile/Library/ConfigurationProfiles/PublicInfo"))
+				(require-not (subpath "/private/var/mobile"))
+				(require-not (subpath "/private/var/tmp"))
+				(require-not (literal "/dev/null"))
+				(require-any
+					(vnode-type BLOCK-DEVICE)
+					(vnode-type CHARACTER-DEVICE))))))
+(deny file-unmount)
+(deny file-write*
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/")
+	(require-all
+		(require-not (extension "com.apple.security.exception.files.absolute-path.read-write"))
+		(require-any
+			(literal "/private/var")
+			(literal "/private/var/root")
+			(literal "/private/etc/master.passwd")
+			(require-all
+				(require-not (subpath "/private/var/tmp"))
+				(require-not (subpath "/private/var/mobile"))))))
+(deny file-write-create
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-write-data
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/")
+	(require-all
+		(require-not (literal "/dev/ptmx"))
+		(require-not (literal "/dev/aes_0"))
+		(require-any
+			(literal "/dev/urandom")
+			(literal "/dev/random"))))
+(deny file-write-flags
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-write-mode
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny file-write-unlink
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny job-creation)
+(deny network-inbound
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny network-bind
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny network-outbound
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/" #"^/private/tmp/launchd-[0-9]+[.][^/]+/sock$"))
+(deny process-exec-interpreter
+	(regex #"/com[.]apple[.]sandbox$" #"/com[.]apple[.]sandbox/" #".+/com[.]apple[.]sandbox$" #".+/com[.]apple[.]sandbox/"))
+(deny system-info
+	(require-all
+		(require-not (info-type "net.link.addr"))
+		(require-any
+			(require-not (debug-mode))
+			(info-type "net.link.addr"))))
